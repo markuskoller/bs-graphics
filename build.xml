@@ -1,0 +1,159 @@
+<project default="release">
+	<property name="version" value="2_0_Beta3"/>
+	<property name="javadoc_title" value="Blackspirit Graphics 2.0 Beta 3"/>
+
+	<taskdef name="jsmoothgen"
+	     classname="net.charabia.jsmoothgen.ant.JSmoothGen"
+	     classpath="build/tools/jsmooth/jsmoothgen-ant.jar"/>
+	
+  
+	<target name="applications">
+		<!-- Video Demo -->
+		<jsmoothgen project="apps/jsmooth/VideoDemo.jsmooth" 
+		      skeletonroot="build/tools/jsmooth/skeletons"/>
+		<move overwrite="true" file="apps/jsmooth/VideoDemo.exe" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="jar/BSGraphics.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="jar/BSGraphicsDemo.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="lib/jogl.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="native/win/jogl_awt.dll" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="native/win/jogl_cg.dll" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="native/win/jogl.dll" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="lib/gluegen-rt.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="native/win/gluegen-rt.dll" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="lib/vecmath.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="lib/jmf.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="lib/fobs4jmf.jar" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="native/win/fobs4jmf.dll" todir="apps/jsmooth/VideoDemo"/>
+		<copy overwrite="true" file="build/resources/jmf.properties" todir="apps/jsmooth/VideoDemo"/>
+		<zip destfile="apps/win/VideoDemo.zip">
+			<fileset dir="apps/jsmooth/VideoDemo">
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="release" depends="jar,javadoc,applications">
+		<!-- Add source -->
+		<zip destfile="release/BSGraphics-${version}.zip">
+			<fileset dir="jar">
+				<include name="BSGraphics.jar"/>
+			</fileset>
+	  		<zipfileset dir="jar/web" prefix="webstart">
+				<include name="BSGraphics.jar"/>
+			</zipfileset>
+	  		<zipfileset prefix="third-party" dir="lib">
+				<include name="vecmath.jar"/>
+	  		</zipfileset>
+			<fileset dir=".">
+				<include name="LICENSE"/>
+				<include name="COPYRIGHT"/>
+				<include name="README"/>
+			</fileset>
+			<fileset dir="build/resources">
+				<include name="bsgraphics.properties"/>
+			</fileset>
+  		</zip>
+	  	<zip destfile="release/BSGraphics-${version}-complete.zip">
+	  		<fileset dir="jar">
+				<include name="BSGraphics.jar"/>
+			</fileset>
+	  		<zipfileset dir="jar/web" prefix="webstart">
+				<include name="BSGraphics.jar"/>
+			</zipfileset>
+			<zipfileset dir="javadoc" prefix="javadoc"/>
+	  		<zipfileset prefix="third-party" dir="lib">
+				<include name="vecmath.jar"/>
+	  		</zipfileset>
+			<zipfileset dir="src" prefix="src"/>
+			<fileset dir=".">
+				<include name="LICENSE"/>
+				<include name="COPYRIGHT"/>
+				<include name="README"/>
+			</fileset>
+			<fileset dir="build/resources">
+				<include name="bsgraphics.properties"/>
+			</fileset>
+		</zip>
+	  	<zip destfile="release/BSGraphics-${version}-src.zip">
+			<zipfileset dir="src"/>
+			<fileset dir=".">
+				<include name="LICENSE"/>
+				<include name="COPYRIGHT"/>
+				<include name="README"/>
+			</fileset>
+	  	</zip>
+	  	<zip destfile="release/BSGraphics-${version}-javadoc.zip">
+			<zipfileset dir="javadoc"/>
+			<fileset dir=".">
+				<include name="LICENSE"/>
+				<include name="COPYRIGHT"/>
+				<include name="README"/>
+			</fileset>
+	  	</zip>
+		<zip destfile="release/BSGraphics-${version}-demo.zip">
+			<fileset dir="jar">
+				<include name="BSGraphicsDemo.jar"/>
+			</fileset>
+	  		<zipfileset dir="jar/web" prefix="webstart">
+				<include name="BSGraphicsDemo.jar"/>
+			</zipfileset>
+	  		<!--zipfileset dir="apps" prefix="apps">
+				<include name="**/*.zip"/>
+				<include name="**/*.jsmooth"/>
+			</zipfileset-->
+			<fileset dir=".">
+				<include name="LICENSE"/>
+				<include name="COPYRIGHT"/>
+				<include name="README"/>
+			</fileset>
+  		</zip>
+	</target>
+
+	<target name="jar">
+		<delete dir="jar"/>
+		<mkdir dir="jar"/>
+	    <jar destfile="jar/BSGraphics.jar"
+	         basedir="bin/classes"
+	         includes="**/*.*"
+	         />
+	    <jar destfile="jar/BSGraphicsDemo.jar"
+	         basedir="bin/demo"
+	         includes="**/*.*"
+	         />
+	  	<copy overwrite="true" file="jar/BSGraphics.jar" tofile="jar/web/BSGraphics.jar"/>
+	  	<copy overwrite="true" file="jar/BSGraphicsDemo.jar" tofile="jar/web/BSGraphicsDemo.jar"/>
+	  	<signjar jar="jar/web/BSGraphics.jar" keystore="webstart/blackspirit.keystore" alias="blackspirit" storepass="BlackspiritPass"/>
+	  	<signjar jar="jar/web/BSGraphicsDemo.jar" keystore="webstart/blackspirit.keystore" alias="blackspirit" storepass="BlackspiritPass"/>
+	</target>
+	<target name="javadoc">
+		<delete dir="javadoc"/>
+		<mkdir dir="javadoc"/>
+		<javadoc
+	             destdir="javadoc"
+	             author="true"
+	             version="true"
+	             use="true"
+	             windowtitle="Blackspirit Graphics"
+	    		 doctitle="${javadoc_title}">
+	
+			<fileset dir="src" defaultexcludes="yes">
+		        <!--include name="com/dummy/test/**"/-->
+		    	<exclude name="ch/blackspirit/graphics/pool/**/*.*"/>
+				<exclude name="ch/blackspirit/graphics/geometry/**/*.*"/>
+				<exclude name="ch/blackspirit/graphics/jogl/Rotation*"/>
+				<exclude name="ch/blackspirit/graphics/jogl/Scale*"/>
+				<exclude name="ch/blackspirit/graphics/jogl/Translation*"/>
+			</fileset>
+	
+	      <!--doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+	      <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>
+	      <tag name="todo" scope="all" description="To do:"/>
+	      <group title="Group 1 Packages" packages="com.dummy.test.a*"/>
+	      <group title="Group 2 Packages" packages="com.dummy.test.b*:com.dummy.test.c*"/>
+	      <link offline="true" href="http://java.sun.com/products/jdk/1.2/docs/api/" packagelistLoc="C:\tmp"/>
+	      <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/-->
+		</javadoc>
+	</target>
+	<target name="web-sign">
+		<signjar jar="lib/web/vecmath.jar" keystore="webstart/blackspirit.keystore" alias="blackspirit" storepass="BlackspiritPass"/>
+	</target>
+</project>

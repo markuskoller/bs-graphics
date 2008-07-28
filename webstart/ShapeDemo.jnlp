@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="ShapeDemo.jnlp">
+	<information>
+		<title>Shape Demo</title>
+		<vendor>Markus Koller</vendor>
+		<description>Shape Demo</description>
+		<description kind="short">Shape Demo</description>
+		<offline-allowed/>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<j2se max-heap-size="128m" href="http://java.sun.com/products/autodl/j2se" version="1.5+" java-vm-args=""/>
+		<jar href="BSGraphicsDemo.jar"/>
+		<jar href="vecmath.jar"/>
+		<jar href="BSGraphics.jar"/>
+		<extension name="Gluegen" href="gluegen-rt.jnlp"/> 
+		<extension name="JOGL" href="jogl.jnlp"/> 
+	</resources>
+	<application-desc main-class="ch.blackspirit.graphics.demo.ShapeDemo"/>
+</jnlp>
