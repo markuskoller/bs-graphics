@@ -33,13 +33,10 @@ import ch.blackspirit.graphics.RealtimeCanvas;
 import ch.blackspirit.graphics.View;
 import ch.blackspirit.graphics.WindowListener;
 import ch.blackspirit.graphics.jogl.CanvasFactory;
-import ch.blackspirit.graphics.particle.DefaultParticlePool;
 import ch.blackspirit.graphics.particle.Emitter;
 import ch.blackspirit.graphics.particle.Particle;
-import ch.blackspirit.graphics.particle.ParticlePool;
 import ch.blackspirit.graphics.particle.ParticleSystem;
 import ch.blackspirit.graphics.particle.PhysicsUpdater;
-import ch.blackspirit.graphics.particle.pedigree.A;
 import ch.blackspirit.graphics.particle.pedigree.ForceUpdater;
 import ch.blackspirit.graphics.particle.pedigree.Initializer;
 import ch.blackspirit.graphics.particle.pedigree.ParticleProducer;
@@ -74,7 +71,7 @@ public class ParticleDemo {
 		canvas.getResourceManager().cacheImage(image);
 
 		// Setup fire particle system
-		final ParticleSystem<Particle> fireSystem = new ParticleSystem<Particle>(A.class);
+		final ParticleSystem<Particle> fireSystem = new ParticleSystem<Particle>(Particle.class);
 		fireSystem.setImage(image);
 		
 		ParticleProducer<Particle> producer = new ParticleProducer<Particle>();
@@ -132,7 +129,7 @@ public class ParticleDemo {
 		fireSystem.addUpdater(property);
 
 		// Setup spring particle system
-		final ParticleSystem<Particle> springSystem = new ParticleSystem<Particle>(A.class);
+		final ParticleSystem<Particle> springSystem = new ParticleSystem<Particle>(Particle.class);
 		springSystem.setImage(image);
 		
 		ParticleProducer<Particle> springProducer1 = new ParticleProducer<Particle>();
