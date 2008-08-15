@@ -12,6 +12,7 @@
 <classPath>gluegen-rt.jar</classPath>
 <classPath>jmf.jar</classPath>
 <classPath>jogl.jar</classPath>
+<classPath>jinput.jar</classPath>
 <classPath>vecmath.jar</classPath>
 <currentDirectory>${EXECUTABLEPATH}</currentDirectory>
 <embeddedJar>false</embeddedJar>

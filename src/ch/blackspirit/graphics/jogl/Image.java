@@ -31,7 +31,7 @@ import com.sun.opengl.util.texture.TextureIO;
 /**
  * @author Markus Koller
  */
-class Image implements ch.blackspirit.graphics.Image {
+public class Image implements ch.blackspirit.graphics.Image {
 	private final int width;
 	private final int height;
 	private final URL url;
@@ -47,7 +47,7 @@ class Image implements ch.blackspirit.graphics.Image {
 	final ByteBuffer byteBuffer; 
 	private TextureData textureData;
 	// texture being set, indicates that the image is cached!
-	Texture texture = null;
+	public Texture texture = null;
 	
 	public Image(URL url, ResourceManager resourceManager, boolean buffered, boolean forceAlpha) throws IOException {
 		this.url = url;
@@ -143,7 +143,7 @@ class Image implements ch.blackspirit.graphics.Image {
 			Arrays.fill(bytes, (byte)0);
 			byteBuffer = ByteBuffer.wrap(bytes);
 			
-			textureData = new TextureData(GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, false, false, false, byteBuffer, null);
+			textureData = new TextureData(GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, false, false, true, byteBuffer, null);
 			if(textureData.getPixelFormat() != GL.GL_RGBA) throw new RuntimeException("Unexpected pixel format");
 			this.alpha = true;
 		} else if(bufferType == BufferTypes.RGB_3Byte) {
@@ -151,7 +151,7 @@ class Image implements ch.blackspirit.graphics.Image {
 			Arrays.fill(bytes, (byte)0);
 			byteBuffer = ByteBuffer.wrap(bytes);
 			
-			textureData = new TextureData(GL.GL_RGB, width, height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, false, false, false, byteBuffer, null);
+			textureData = new TextureData(GL.GL_RGB, width, height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, false, false, true, byteBuffer, null);
 			if(textureData.getPixelFormat() != GL.GL_RGB) throw new RuntimeException("Unexpected pixel format");
 			this.alpha = false;
 		} else {
@@ -285,5 +285,22 @@ class Image implements ch.blackspirit.graphics.Image {
 	public void updateBuffer(int xOffset, int yOffset, int width, int height) {
 		if(bytes == null) return;
 		resourceManager.updateBuffer(this, xOffset, yOffset, width, height);
+	}
+	
+	public String toString() {
+		StringBuffer desc = new StringBuffer();
+		if(url != null) {
+			desc.append(url.toString() + ": ");
+		}
+		desc.append(getWidth());
+		desc.append("x");
+		desc.append(getHeight());
+		if(isBuffered()) {
+			desc.append(" ");
+			desc.append(getBufferType().toString());
+		} else {
+			desc.append(" unbuffered");
+		}
+		return desc.toString();
 	}
 }

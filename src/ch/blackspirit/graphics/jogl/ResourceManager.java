@@ -29,6 +29,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLDrawable;
 import javax.media.opengl.GLException;
 
+import ch.blackspirit.graphics.Canvas;
 import ch.blackspirit.graphics.Image;
 import ch.blackspirit.graphics.pool.ObjectPool;
 
@@ -53,8 +54,7 @@ class ResourceManager implements
 
 	private GLExecutor glExecutor;
 
-	private BufferUpdate bufferUpdate = new BufferUpdate();
-	private BufferRegionUpdate bufferRegionUpdate = new BufferRegionUpdate();
+	private BufferRegionUpdate bufferRegionUpdate;
 
 	private ObjectPool<FreeImage> freeImagePool = new ObjectPool<FreeImage>(new FreeImage(), 10);
 	private ObjectPool<FreeImages> freeImagesPool = new ObjectPool<FreeImages>(new FreeImages(), 10);
@@ -69,8 +69,9 @@ class ResourceManager implements
 	
 	private ArrayList<GLExecutable> failedExecutables = new ArrayList<GLExecutable>(100);
 	
-	public ResourceManager(GLExecutor glExecutor) {
+	public ResourceManager(GLExecutor glExecutor, Canvas canvas) {
 		this.glExecutor = glExecutor;
+		this.bufferRegionUpdate = new BufferRegionUpdate(canvas);
 	}
 	
 	void cleanup() {
@@ -80,7 +81,7 @@ class ResourceManager implements
 			if(!glExecutor.execute(executable)) {
 				throw new RuntimeException("Error executing GLExecutables");
 			}
-			// TODO do that better!! (Pool aware objects having a free method!)
+			// TODO do that better! (Pool aware objects having a free method!)
 			if(executable instanceof UpdateCache) updateCachePool.free((UpdateCache)executable);
 			else if(executable instanceof UpdateCacheRegion) updateCacheRegionPool.free((UpdateCacheRegion)executable);
 			else if(executable instanceof FreeImage) freeImagePool.free((FreeImage)executable);
@@ -143,11 +144,11 @@ class ResourceManager implements
 		executable.font = font;
 		if(!glExecutor.execute(executable)) {
 			failedExecutables.add(executable);
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching font failed");
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching font failed: " + font);
 			return false;
 		} else {
 			cacheFontPool.free(executable);
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache font end");
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Successfully cached font: " + font);
 			return true;
 		}
 	}
@@ -172,7 +173,6 @@ class ResourceManager implements
 		}
 	}
 	public boolean cacheImage(Image image) throws IOException {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache image start");
 		CacheImage executable = cacheImagePool.get();
 		executable.resourceManager = this;
 		executable.image = image;
@@ -180,10 +180,11 @@ class ResourceManager implements
 		if(executable.exception != null) throw executable.exception;
 		if(!success) {
 			failedExecutables.add(executable);
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching image failed: " + image.toString());
 		} else {
 			cacheImagePool.free(executable);
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Successfully cached image: " + image.toString());
 		}
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache image end");
 		return success;
 	}
 
@@ -205,40 +206,31 @@ class ResourceManager implements
 	public Collection<Font> getCachedFonts() {
 		return new HashSet<Font>(cachedFonts);
 	}
-	private boolean cache(Font font) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache font start");
-
+	private void cache(Font font) {
 		TextRenderer textRenderer = textRenderers.get(font);
 		if(textRenderer == null) {
 			textRenderer = new TextRenderer(font, true, false);
 			this.textRenderers.put(font, textRenderer);
 			this.cachedFonts.add(font);
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache font end");
-			return true;
-		} else {
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching font failed");
-			return false;
 		}
 	}
 	private void freeFontCache(Font font) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached font start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached font: " + font);
 		TextRenderer renderer = textRenderers.get(font);
 		if(renderer != null) {
 			renderer.dispose();
 			textRenderers.remove(font);
 			cachedFonts.remove(font);
 		}
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached font end");
 	}
 	private void freeFontCache() {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free font cache start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached fonts");
 		for(Font font: cachedFonts) {
 			TextRenderer renderer = textRenderers.get(font);
 			renderer.dispose();
 		}
 		textRenderers.clear();
 		cachedFonts.clear();
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free font cache end");
 	}
 
 	TextRenderer getTextRenderer(Font font) {
@@ -246,7 +238,7 @@ class ResourceManager implements
 		if(textRenderer == null) {
 			cacheFont(font);
 			textRenderer = textRenderers.get(font);
-			if(textRenderer == null) throw new RuntimeException("Unable to cache font: " + font.getName());
+			if(textRenderer == null) throw new RuntimeException("Unable to cache font: " + font);
 		}
 		return textRenderer;
 	}
@@ -258,24 +250,36 @@ class ResourceManager implements
 	}
 	
 	void updateBuffer(ch.blackspirit.graphics.jogl.Image image) {
-		bufferUpdate.image = image;
-		
-		if(AbstractGraphicsContext.isDrawing()) throw new RuntimeException("Image buffer update not allowed while drawing");
-		
-		bufferUpdate.image = image;
-		glExecutor.execute(bufferUpdate);
+		updateBuffer(image, 0, 0, image.getWidth(), image.getHeight());
 	}
 
 	void updateBuffer(ch.blackspirit.graphics.jogl.Image image, int xOffset, int yOffset, int width, int height) {
+		if(AbstractGraphicsContext.isDrawing()) throw new RuntimeException("Image buffer update not allowed while drawing");
+
+		if(image.texture == null) {
+			try {
+				if(!cacheImage(image)) {
+					System.out.println("failed");
+					return;
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Error caching image. Do manual caching to prevent such errors at runtime.", e);
+			}
+		}
+		
+		if(xOffset >= image.getWidth()) throw new IllegalArgumentException("X offset outside image");
+		if(yOffset >= image.getHeight()) throw new IllegalArgumentException("Y offset outside image");
+		if(xOffset < 0) throw new IllegalArgumentException("X offset must not be less than 0");
+		if(yOffset < 0) throw new IllegalArgumentException("Y offset must not be less than 0");
+		if(xOffset + width > image.getWidth()) throw new IllegalArgumentException("Defined region is bigger than image: xOffset=" + xOffset + " ,width=" + width);
+		if(yOffset + height > image.getHeight()) throw new IllegalArgumentException("Defined region is bigger than image: yOffset=" + yOffset + " ,height=" + height);
+
 		bufferRegionUpdate.image = image;
 		bufferRegionUpdate.x = xOffset;
 		bufferRegionUpdate.y = yOffset;
 		bufferRegionUpdate.width = width;
 		bufferRegionUpdate.height = height;
 		
-		if(AbstractGraphicsContext.isDrawing()) throw new RuntimeException("Image buffer update not allowed while drawing");
-		
-		bufferRegionUpdate.image = image;
 		glExecutor.execute(bufferRegionUpdate);
 	}
 
@@ -297,7 +301,7 @@ class ResourceManager implements
 	}
 	
 	private void cacheBuffered(ch.blackspirit.graphics.jogl.Image image) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache buffered image start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching buffered image: " + image.toString());
 		image.texture = TextureIO.newTexture(image.getTextureData());
 
 		// Default?
@@ -307,10 +311,9 @@ class ResourceManager implements
 		image.texture.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         image.texture.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         cachedImages.add(image);
-        if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache buffered image end");
 	}
 	private void cacheUnbuffered(ch.blackspirit.graphics.jogl.Image image) throws IOException {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache unbuffered image start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching unbuffered image: " + image.toString());
 		TextureData textureData = image.createTextureData();
 		image.texture = TextureIO.newTexture(textureData);
 		textureData.flush();
@@ -321,21 +324,19 @@ class ResourceManager implements
 		image.texture.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         image.texture.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         cachedImages.add(image);
-        if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Cache unbuffered image end");
 	}
 	
 	private void freeImageCache() {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free image cache start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free image cache");
 		for(ch.blackspirit.graphics.jogl.Image image: cachedImages) {
 			if(image.texture != null) image.texture.dispose();
 			image.texture = null;
 		}
 		cachedImages.clear();
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free image cache end");
 	}
 
 	private void freeImageCache(Image image) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached image start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached image: " + image.toString());
 		if(image instanceof ch.blackspirit.graphics.jogl.Image) {
 			ch.blackspirit.graphics.jogl.Image joglImage = (ch.blackspirit.graphics.jogl.Image)image;
 			if(joglImage.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
@@ -346,7 +347,6 @@ class ResourceManager implements
 		} else {
 			throw new RuntimeException("Image has not been created by the JOGL Blackspirit Graphics implementation!");
 		}
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached image end");
 	}
 	
 	private void refreshImageCache() {
@@ -356,33 +356,32 @@ class ResourceManager implements
 			try {
 				cache(image);
 			} catch (IOException e) {
-				if(LOGGER.isLoggable(Level.FINER)) LOGGER.log(Level.SEVERE, "Reloading an already cached image failed: " + image.getURL(), e);
+				LOGGER.log(Level.SEVERE, "Failed reloading an already cached image: " + image.toString(), e);
 			}
 		}
 	}
 	
 	private void updateBufferedCache(ch.blackspirit.graphics.jogl.Image image) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered cache start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache: " + image.toString());
 		long time = System.nanoTime();
 		
 		if(image.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
 		if(image.texture == null) cacheBuffered(image);
 		else image.texture.updateImage(image.getTextureData());
 
-		if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Image Region Update: " + (System.nanoTime() - time) + "ns");
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered cache end");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache took " + (System.nanoTime() - time) + "ns");
 	}
 	
 	private void updateBufferedCache(ch.blackspirit.graphics.jogl.Image image, int offsetX, int offsetY, int width, int height) {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered cache region start");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache region " + offsetX + "," + offsetY + " " + width + "x" + height + ": " + image.toString());
 		long time = System.nanoTime();
 		
 		if(image.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
 		if(image.texture == null) cacheBuffered(image);
 		else image.texture.updateSubImage(image.getTextureData(), 0, offsetX, offsetY, offsetX, offsetY, width, height);
+//		else image.texture.updateSubImage(image.getTextureData(), 0, 10, 2, 0, 63, width, height);
 		
-		if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Image Region Update: " + (System.nanoTime() - time) + "ns");
-	    if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered cache region end");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache region took " + (System.nanoTime() - time) + "ns");
 	}
 	
 	/* ----------- GLExecutables -------------- */
@@ -390,6 +389,7 @@ class ResourceManager implements
 		ResourceManager resourceManager;
 		ch.blackspirit.graphics.jogl.Image image;
 		public void execute(GLDrawable drawable, GL gl) {
+			System.out.println("cache");
 			resourceManager.updateBufferedCache(image);
 		}
 	}
@@ -401,6 +401,7 @@ class ResourceManager implements
 		int width;
 		int height;
 		public void execute(GLDrawable drawable, GL gl) {
+			System.out.println("cache region");
 			resourceManager.updateBufferedCache(image, offsetX, offsetY, width, height);
 		}
 	}

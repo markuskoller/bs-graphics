@@ -39,13 +39,21 @@ public class ParticleSystem<T extends Particle> {
 
 	private ParticlePool<T> particlePool;
 	
+	private Vector2f position = new Vector2f();
+
 	private long time = 0;
 	private long updatedTime = 0;
+	
+	private long stepSize = 10;
 	
 	private Image image;
 
 	public ParticleSystem(ParticlePool<T> particlePool) {
 		this.particlePool = particlePool;
+		particles = new Object[10000];
+	}
+	public ParticleSystem(Class<? extends T> particleClazz) {
+		this.particlePool = new DefaultParticlePool<T>(particleClazz);
 		particles = new Object[10000];
 	}
 	public ParticleSystem(ParticlePool<T> particlePool, int maxParticles) {
@@ -73,31 +81,41 @@ public class ParticleSystem<T extends Particle> {
 	}
 	
 	public void update(long elapsedTime) {
+		int updaterCount = updaters.size();
+
 		time += elapsedTime;
 		for(int i = 0; i < emitters.size(); i++) {
 			Emitter<T> emitter = emitters.get(i);
 			List<T> emitted = emitter.emit(elapsedTime);
 			for(int p = 0; p < emitted.size(); p++) {
-				particles[particleCount] = emitted.get(p);
+				T particle = emitted.get(p);
+				particle.getPosition().add(position);
+				particles[particleCount] = particle;
+				for(int u = 0; u < updaterCount; u++) {
+					Updater<T> updater = updaters.get(u);
+					updater.update(particle, 0);
+				}
 				particleCount++;
 			}
 		}
 		
 		// update particles
-		int updaterCount = updaters.size();
 		
-		updatedTime = time;
-		for(int u = 0; u < updaterCount; u++) {
-			Updater<T> updater = updaters.get(u);
+		while(time - updatedTime > stepSize) {
+			updatedTime += stepSize;
+
+			for(int u = 0; u < updaterCount; u++) {
+				Updater<T> updater = updaters.get(u);
+				for(int i = 0; i < particleCount; i++) {
+					T particle = (T)particles[i];
+					long updateTime = updatedTime - particle.getTime();
+					if(updateTime > 0) updater.update(particle, updateTime);
+				}
+			}
 			for(int i = 0; i < particleCount; i++) {
 				T particle = (T)particles[i];
-				long updateTime = updatedTime - particle.getTime();
-				updater.update(particle, updateTime);
+				if(updatedTime > particle.getTime()) particle.setTime(updatedTime);
 			}
-		}
-		for(int i = 0; i < particleCount; i++) {
-			T particle = (T)particles[i];
-			particle.setTime(updatedTime);
 		}
 		
 		for(int i = 0; i < particleCount; i++) {
@@ -124,9 +142,12 @@ public class ParticleSystem<T extends Particle> {
 	}
 	public void addEmitter(Emitter<T> emitter) {
 		emitters.add(emitter);
+		emitter.setParticlePool(particlePool);
 	}
 	public boolean removeEmitter(Emitter<T> emitter) {
-		return emitters.remove(emitter);
+		boolean removed = emitters.remove(emitter);
+		if(removed) emitter.setParticlePool(null);
+		return removed;
 	}
 	
 	public void reset() {
@@ -193,6 +214,13 @@ public class ParticleSystem<T extends Particle> {
 	
 	public long getParticleCount() {
 		return particleCount;
+	}
+	
+	public Vector2f getPosition() {
+		return position;
+	}
+	public void setPosition(float x, float y) {
+		position.set(x, y);
 	}
 	
 	public static class LifetimeComparator<T extends Particle> implements Comparator<T> {

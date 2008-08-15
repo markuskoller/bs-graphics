@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="SwingDemo.jnlp">
+<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="ParticleDemo.jnlp">
 	<information>
-		<title>Swing Demo</title>
+		<title>Particle Demo</title>
 		<vendor>Markus Koller</vendor>
-		<description>Swing Demo</description>
-		<description kind="short">Swing Demo</description>
+		<description>Particle Demo</description>
+		<description kind="short">Particle Demo</description>
 		<offline-allowed/>
 	</information>
 	<security>
@@ -18,5 +18,5 @@
 		<extension name="JInput" href="jinput.jnlp"/> 
 		<extension name="BSGraphics" href="bsgraphics.jnlp"/> 
 	</resources>
-	<application-desc main-class="ch.blackspirit.graphics.demo.SwingDemo"/>
+	<application-desc main-class="ch.blackspirit.graphics.demo.ParticleDemo"/>
 </jnlp>

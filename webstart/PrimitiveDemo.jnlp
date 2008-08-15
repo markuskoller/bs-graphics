@@ -13,10 +13,10 @@
 	<resources>
 		<j2se max-heap-size="128m" href="http://java.sun.com/products/autodl/j2se" version="1.5+" java-vm-args=""/>
 		<jar href="BSGraphicsDemo.jar"/>
-		<jar href="vecmath.jar"/>
-		<jar href="BSGraphics.jar"/>
 		<extension name="Gluegen" href="gluegen-rt.jnlp"/> 
 		<extension name="JOGL" href="jogl.jnlp"/> 
+		<extension name="JInput" href="jinput.jnlp"/> 
+		<extension name="BSGraphics" href="bsgraphics.jnlp"/> 
 	</resources>
 	<application-desc main-class="ch.blackspirit.graphics.demo.PrimitiveDemo"/>
 </jnlp>

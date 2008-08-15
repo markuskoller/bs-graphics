@@ -51,7 +51,7 @@ class CanvasGraphics implements Graphics, ViewListener {
 	}
 	
 	void init() {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Canvas graphics start init");
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Initializing canvas graphics");
 //		delegate.prepareExternalCode();
 		GL gl = delegate.getGL();
 		
@@ -84,7 +84,6 @@ class CanvasGraphics implements Graphics, ViewListener {
 	    cameraChanged();
 
 		delegate.init();
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Canvas graphics end init");
 	}
 
 	private void initGLViewPort() {

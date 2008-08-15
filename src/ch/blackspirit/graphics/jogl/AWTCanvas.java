@@ -77,7 +77,7 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 	private RenderContext canvasRenderContext = new RenderContext();
 	private final View view = new View();
 	private final ch.blackspirit.graphics.jogl.ResourceManager resourceManager = 
-		new ch.blackspirit.graphics.jogl.ResourceManager(this);
+		new ch.blackspirit.graphics.jogl.ResourceManager(this, this);
 	private final ch.blackspirit.graphics.jogl.ImageFactory imageFactory = 
 		new ch.blackspirit.graphics.jogl.ImageFactory(resourceManager);
 	private final GraphicsDelegate delegate;
@@ -105,11 +105,13 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 		canvasGraphics = new CanvasGraphics(delegate, view);
         canvasGLEventListener = new CanvasGLEventListener(this, resourceManager, imageFactory, view, canvasGraphics);
         canvasGLEventListener.setDebugGL(properties.isDebugGL());
-        canvasGLEventListener.setTraceGL(properties.isTraceGL());
+        canvasGLEventListener.setTrace(properties.isTrace());
+        canvasGLEventListener.setTraceLevel(properties.getTraceLogLevel());
         canvasRenderContext.setMainGLEventListener(canvasGLEventListener);
 
         executableListener.setDebugGL(properties.isDebugGL());
-        executableListener.setTraceGL(properties.isTraceGL());
+        executableListener.setTrace(properties.isTrace());
+        executableListener.setTraceLevel(properties.getTraceLogLevel());
 	}
 	
 	public GraphicsDelegate getGraphicsDelegate() {
@@ -122,7 +124,7 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 	public boolean execute(GLExecutable glExecutable) {
 		try {
 			GL gl = GLU.getCurrentGL();
-			glExecutable.execute(null, gl);
+			glExecutable.execute(GLContext.getCurrent().getGLDrawable(), gl);
 		} catch(GLException e) {
 			// no context current
 			try {

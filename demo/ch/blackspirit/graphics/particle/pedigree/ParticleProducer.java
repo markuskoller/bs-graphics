@@ -26,7 +26,7 @@ import ch.blackspirit.graphics.particle.ParticlePool;
  * @author Markus Koller
  */
 public class ParticleProducer<T extends Particle> implements ch.blackspirit.graphics.particle.ParticleProducer<T> {
-	private ParticlePool<T> particleManager;
+	private ParticlePool<T> particlePool;
 	private Random random = new Random();
 	
 	private long currentTime = 0;
@@ -41,10 +41,6 @@ public class ParticleProducer<T extends Particle> implements ch.blackspirit.grap
 	
 //	<emitCount enabled="true" max="1000.0" min="1000.0"/>
 
-	public ParticleProducer(ParticlePool<T> particleManager) {
-		this.particleManager = particleManager;
-	}
-	
 	List<T> list = new ArrayList<T>();
 	public List<T> getParticles(long elapsedTime) {
 		this.currentTime += elapsedTime;
@@ -56,7 +52,7 @@ public class ParticleProducer<T extends Particle> implements ch.blackspirit.grap
 			lastSpawn += nextSpawnInterval;
 			
 			for(int i = 0; i < currentCount; i++) {
-				T particle = particleManager.getParticle();
+				T particle = particlePool.getParticle();
 				particle.getVelocity().set(0,0);
 				particle.getPosition().set(0,0);
 				particle.getForce().set(0,0);
@@ -97,5 +93,12 @@ public class ParticleProducer<T extends Particle> implements ch.blackspirit.grap
 	}
 	public void setCountMax(long countMax) {
 		this.countMax = countMax;
+	}
+
+	public ParticlePool<T> getParticlePool() {
+		return particlePool;
+	}
+	public void setParticlePool(ParticlePool<T> particlePool) {
+		this.particlePool = particlePool;
 	}
 }

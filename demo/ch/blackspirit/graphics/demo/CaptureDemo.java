@@ -15,12 +15,13 @@
  */
 package ch.blackspirit.graphics.demo;
 
-import java.awt.AWTEvent;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import javax.vecmath.Color4f;
 
 import net.java.games.input.Controller;
@@ -28,8 +29,6 @@ import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
 import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller.Type;
-
-import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Flip;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
@@ -42,23 +41,28 @@ import ch.blackspirit.graphics.anim.Animation;
 import ch.blackspirit.graphics.anim.AnimationImpl;
 import ch.blackspirit.graphics.anim.Frame;
 import ch.blackspirit.graphics.anim.FrameImpl;
+import ch.blackspirit.graphics.debug.TraceGraphics;
+import ch.blackspirit.graphics.jogl.BufferTypes;
 import ch.blackspirit.graphics.jogl.CanvasFactory;
+import ch.blackspirit.graphics.util.AWTUtil;
 
 /**
  * @author Markus Koller
  */
-public class ImageDemo  {
+public class CaptureDemo  {
 	private static boolean up = false;
 	private static boolean down = false;
 	private static boolean left = false;
 	private static boolean right = false;
-	private static float posX = 380;
-	private static float posY = 450;
+	private static float posX = 200;
+	private static float posY = 50;
 	
 	private RealtimeCanvas canvas;
 
+	private boolean doSave = false;
+	
 	public static void main(String []args) throws IOException {
-		ImageDemo demo = new ImageDemo();
+		CaptureDemo demo = new CaptureDemo();
 		demo.start();
 	}
 	public void start() throws IOException {
@@ -73,34 +77,30 @@ public class ImageDemo  {
 
 		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
 
-		// Create a fullscreen realtime canvas using the current display mode.
-		DisplayMode mode = factory.getDisplayMode(800, 600);
-		if(mode != null) {
-			canvas = factory.createRealtimeCanvasFullscreen(mode);
-		} else {
-			canvas = factory.createRealtimeCanvasFullscreen();
-		}
+		canvas = factory.createRealtimeCanvasWindow(400, 300);
 
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
-		canvas.setWindowTitle("Image Render Demo");
+		canvas.setWindowTitle("Capture Demo");
 		
-		final Image animLeftImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono - Walk (Left) 44x68.png"), false);
+		final Image save = canvas.getImageFactory().createBufferedImage(400, 300, BufferTypes.RGB_3Byte);
+
+		final Image animLeftImage = canvas.getImageFactory().createBufferedImage(
+				CaptureDemo.class.getResource("/sprites/Crono - Walk (Left) 44x68.png"), false);
 		Image animFrontImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono - Walk (Front) 40x70.png"), false);
+				CaptureDemo.class.getResource("/sprites/Crono - Walk (Front) 40x70.png"), false);
 		Image animBackImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono - Walk (Back) 36x70.png"), false);
+				CaptureDemo.class.getResource("/sprites/Crono - Walk (Back) 36x70.png"), false);
 		Image leftImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono (Left).png"), false);
+				CaptureDemo.class.getResource("/sprites/Crono (Left).png"), false);
 		Image frontImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono (Front).png"), false);
+				CaptureDemo.class.getResource("/sprites/Crono (Front).png"), false);
 		Image backImage = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/Crono (Back).png"), false);
+				CaptureDemo.class.getResource("/sprites/Crono (Back).png"), false);
 		final Image grass = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/grass.png"), false);
+				CaptureDemo.class.getResource("/sprites/grass.png"), false);
 		final Image wall = canvas.getImageFactory().createImage(
-				ImageDemo.class.getResource("/sprites/wall.png"), false);
+				CaptureDemo.class.getResource("/sprites/wall.png"), false);
 
 		canvas.getResourceManager().cacheImage(animLeftImage);
 		canvas.getResourceManager().cacheImage(animFrontImage);
@@ -153,13 +153,9 @@ public class ImageDemo  {
 		animBack.setRepeated(true);
 		
 		final Color4f white = new Color4f(1,1,1,1);
-		final Color4f white_alpha = new Color4f(1,1,1,.5f);
 		final Color4f red = new Color4f(1,0,0,1);
-		final Color4f green = new Color4f(0,1,0,1);
-		final Color4f blue = new Color4f(0,0,1,1);
 
 		canvas.setGraphicsListener(new GraphicsListener() {
-			float angle = 0;
 			long start = System.nanoTime();
 			long currTime = start;
 			long count = 0;
@@ -180,142 +176,19 @@ public class ImageDemo  {
 				renderer.setColor(white);
 
 				// Background
-				for(int x = 0; x <= 800; x+=grass.getWidth() * 2) {
-					for(int y = 0; y <= 600; y+=grass.getHeight() * 2) {
+				for(int x = 0; x <= 400; x+=grass.getWidth() * 2) {
+					for(int y = 0; y <= 300; y+=grass.getHeight() * 2) {
 						renderer.translate(-x, -y);
 						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
 						renderer.clearTransformation();
 					}
 				}
 	
-				for(int x = 0; x <= 800; x+=wall.getWidth() * 2) {
+				for(int x = 0; x <= 400; x+=wall.getWidth() * 2) {
 					renderer.translate(-x, -160);
 					renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
 					renderer.clearTransformation();
 				}
-				for(int x = 0; x <= 800; x+=wall.getWidth() * 2) {
-					renderer.translate(-x, -380);
-					renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-					renderer.clearTransformation();
-				}
-	
-				for(int y = -16; y <= 400; y+=16) { 
-					renderer.translate(-272, -y);
-					renderer.drawImage(wall, wall.getWidth() * 2, 30, 0, 0, wall.getWidth(), 15);
-					renderer.clearTransformation();
-				}
-				renderer.translate(-272, -400);
-				renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-				renderer.clearTransformation();
-				for(int y = -16; y <= 400; y+=16) { 
-					renderer.translate(-512, -y);
-					renderer.drawImage(wall, wall.getWidth() * 2, 30, 0, 0, wall.getWidth(), 15);
-					renderer.clearTransformation();
-				}
-				renderer.translate(-512, -400);
-				renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-				renderer.clearTransformation();
-			
-				// Animation
-				int animationX = 50;
-				int animationY = 50;
-				renderer.translate(-animationX, -animationY);
-				renderer.drawText("Animation");
-				renderer.translate(0, -20);
-				animLeft.draw(renderer, 44, 68);
-				renderer.translate(-54, 0);
-				animLeft.draw(renderer, 44, 68, Flip.VERTICAL);
-				renderer.translate(-54, 0);
-				animFront.draw(renderer, 40, 70);
-				renderer.translate(-50, 0);
-				animBack.draw(renderer, 36, 70);
-				renderer.clearTransformation();
-				// Flipping
-				int flipX = 300;
-				int flipY = 50;
-				renderer.translate(-flipX, -flipY);
-				renderer.drawText("Flipping");
-				renderer.translate(0, -20);
-				animLeft.draw(renderer, 44, 68, Flip.NONE);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, 44, 68, Flip.VERTICAL);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, 44, 68, Flip.HORIZONTAL);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, 44, 68, Flip.BOTH);
-				renderer.clearTransformation();
-		
-				// Rotating
-				int rotateX = 550;
-				int rotateY = 50;
-				angle += elapsedTime / 20000000f;
-				renderer.translate(-rotateX, -rotateY);
-				renderer.drawText("Rotating");
-				renderer.translate(-(20 + animLeft.getWidth() / 2), -(20 + animLeft.getHeight() / 2));
-				renderer.rotate(angle);
-				renderer.translate(animLeft.getWidth() / 2, animLeft.getHeight() / 2);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.clearTransformation();
-				
-				// Coloring
-				int colorX = 50;
-				int colorY = 220;
-				renderer.translate(-colorX, -colorY);
-				renderer.drawText("Coloring");
-				renderer.setColor(red);
-				renderer.translate(0, -20);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.setColor(green);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.setColor(blue);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.setColor(white_alpha);
-				renderer.translate(-50, 0);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.clearTransformation();
-
-				// Sub-Imaging
-				int subX = 300;
-				int subY = 220;
-				renderer.setColor(white);
-				renderer.translate(-subX, -subY);
-				renderer.drawText("Sub-Imaging");
-				renderer.translate(0, -20);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 2, 0, 0, animLeft.getWidth(), animLeft.getHeight() / 2);
-				renderer.translate(0, -42);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 2, 0, animLeft.getHeight() / 2, animLeft.getWidth(), animLeft.getHeight() / 2);
-				renderer.translate(-50, 42);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 4, 0, 0, animLeft.getWidth(), animLeft.getHeight() / 4);
-				renderer.translate(0, - 8 - (animLeft.getHeight() / 4));
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 4, 0, animLeft.getHeight() / 4, animLeft.getWidth(), animLeft.getHeight() / 4);
-				renderer.translate(0, - 8 - (animLeft.getHeight() / 4));
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 4, 0, animLeft.getHeight() / 4 * 2, animLeft.getWidth(), animLeft.getHeight() / 4);
-				renderer.translate(0, - 8 - (animLeft.getHeight() / 4));
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight() / 4, 0, animLeft.getHeight() / 4 * 3, animLeft.getWidth(), animLeft.getHeight() / 4);
-				renderer.translate(-50, 24 + (animLeft.getHeight() / 4 * 3));
-				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight(), 0, 0, animLeft.getWidth() / 2, animLeft.getHeight());
-				renderer.translate(-30, 0);
-				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight(), animLeft.getWidth() / 2, 0, animLeft.getWidth() / 2, animLeft.getHeight());
-				renderer.clearTransformation();
-			
-				// Sizing
-				int sizeX = 550;
-				int sizeY = 220;
-				renderer.translate(-sizeX, -sizeY);
-				renderer.drawText("Sizing");
-				renderer.translate(0, -20);
-				animLeft.draw(renderer, animLeft.getWidth() * 2, animLeft.getHeight() * 2);
-				renderer.translate(-(10 + animLeft.getWidth() * 2), 0);
-				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.translate(0, -(animLeft.getHeight() * 3 / 2));
-				animLeft.draw(renderer, animLeft.getWidth() * 2, animLeft.getHeight() / 2);
-				renderer.translate(-(10 + animLeft.getWidth()), animLeft.getHeight() * 3 / 2);
-				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight() / 2);
-				renderer.translate(10 - animLeft.getWidth(), 0);
-				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight() * 2);
-				renderer.clearTransformation();
 			
 				if(up && !down) {
 					posY -= (float)elapsedTime / 11000000;
@@ -359,8 +232,13 @@ public class ImageDemo  {
 				
 				renderer.setColor(red);
 				renderer.clearTransformation();
-				renderer.translate(-650, -580);
+				renderer.translate(-250, -280);
 				renderer.drawText("FPS:" + fps);
+				
+				if(doSave) {
+					// Copy the content of the canvas
+					renderer.copyToImage(save);
+				}
 				
 				count++;
 				if(currTime - start > 1000000000) {
@@ -372,8 +250,8 @@ public class ImageDemo  {
 			}
 
 			public void init(View view, Graphics renderer) {
-				view.setCamera(400, 300, 0);
-				view.setSize(800, 600);
+				view.setCamera(200, 150, 0);
+				view.setSize(400, 300);
 			}
 
 			public void sizeChanged(GraphicsContext canvas, View view) {}
@@ -381,7 +259,7 @@ public class ImageDemo  {
 		});
 
 	
-		// Cleaning up
+		// Cleanup
 		System.gc();
 		
 		// Starting the rendering
@@ -409,9 +287,44 @@ public class ImageDemo  {
 				left = keyboard.isKeyDown(Key.LEFT);
 				right = keyboard.isKeyDown(Key.RIGHT);
 				up = keyboard.isKeyDown(Key.UP);
+
+				doSave = keyboard.isKeyDown(Key.I);
 			}
+
 			
 			canvas.draw();
+			
+			// Saving the image
+			if(doSave) {
+				// Update the image buffer
+				save.updateBuffer();
+				
+				// Convert to BufferedImage
+				BufferedImage awtSave = AWTUtil.readImageBuffer(save);
+				
+				JFileChooser chooser = new JFileChooser();
+				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileFilter(new FileFilter() {
+					@Override
+					public boolean accept(File f) {
+						return f.getName().endsWith(".png");
+					}
+					@Override
+					public String getDescription() {
+						return "Portable Network Graphics (.png)";
+					}
+				});
+				if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+					String fileName = chooser.getSelectedFile().getAbsolutePath();
+					if(!fileName.endsWith(".png")) {
+						fileName = fileName + ".png";
+					}
+					
+					// Save using ImageIO
+					ImageIO.write(awtSave, "png", new File(fileName));
+				}
+				doSave = false;
+			}
 		}
 	}
 }

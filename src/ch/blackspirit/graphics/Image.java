@@ -78,4 +78,9 @@ public interface Image {
 
 	public void updateBuffer();
 	public void updateBuffer(int xOffset, int yOffset, int width, int height);
+	
+	// FEATURE release buffer
+//	public void releaseBuffer();
+	// FEATURE create buffer
+//	public void createBuffer();
 }

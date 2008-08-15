@@ -96,17 +96,18 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 	
 	private void setTransformation() {
-		endPrimitives();
+		endPrimitivesKeepImage();
 		GL gl = drawable.getGL();
 		
 		// Reset
 		gl.glLoadIdentity();
+		
 		// Rotate to correct view
 		gl.glRotatef(180f, 1, 0, 0);
 		gl.glRotatef(angle, 0, 0, 1);
+
 		// Translate to camera
 		gl.glTranslatef(translationX, translationY, 0);
-
 
 		// Recreate correct transformation
 		for(int i = 0; i < transformations.size(); i++) {
@@ -133,7 +134,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 
 	
 	public void clear() {
-		endPrimitives();
+		endPrimitivesKeepImage();
 //		setClearColor(new Color4f(0,0,0,1));
 //		System.out.println("before");
 		drawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT);
@@ -155,7 +156,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 	
 	public void setColor(Color4f color) {
-		endPrimitives();
 	    this.color.set(color);
 	    applyColor();
 	}
@@ -189,6 +189,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 
 	public void setBaseColor(Color4f color) {
+		endPrimitivesKeepImage();
 		this.baseColor = color;
 		applyBaseColor();
 	}
@@ -304,6 +305,9 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		clearTransformation();
 	}
 	
+	public void endPrimitivesKeepImage() {
+		startPrimitive(null, drawable.getLastImage());
+	}
 	public void endPrimitives() {
 		startPrimitive(null, null);
 	}
@@ -393,14 +397,14 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 //	}
 
 	public void rotate(float angle) {
-		endPrimitives();
+		endPrimitivesKeepImage();
 		Rotation rotation = rotations.get();
 		rotation.setAngle(angle);
 		transformations.add(rotation);
 		rotation.apply(drawable.getGL());
 	}
 	public void translate(float x, float y) {
-		endPrimitives();
+		endPrimitivesKeepImage();
 		Translation translation = translations.get();
 		translation.setTranslateX(-x);
 		translation.setTranslateY(-y);
@@ -408,7 +412,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		translation.apply(drawable.getGL());
 	}
 	public void scale(float x, float y) {
-		endPrimitives();
+		endPrimitivesKeepImage();
 		Scale scale = scales.get();
 		scale.setScaleX(x);
 		scale.setScaleY(y);
@@ -432,6 +436,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 
 	public void drawText(String text) {
+		endPrimitives();
 		TextRenderer textRenderer = resourceManager.getTextRenderer(font);
 		textRenderer.begin3DRendering();
 		applyColor();
@@ -452,6 +457,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return redMask;
 	}
 	public void setRedMask(boolean red) {
+		endPrimitivesKeepImage();
 		this.redMask = red;
 		applyColorMask();
 	}
@@ -459,6 +465,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return greenMask;
 	}
 	public void setGreenMask(boolean green) {
+		endPrimitivesKeepImage();
 		this.greenMask = green;
 		applyColorMask();
 	}
@@ -466,6 +473,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return blueMask;
 	}
 	public void setBlueMask(boolean blue) {
+		endPrimitivesKeepImage();
 		this.blueMask = blue;
 		applyColorMask();
 	}
@@ -473,10 +481,12 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return alphaMask;
 	}
 	public void setAlphaMask(boolean alpha) {
+		endPrimitivesKeepImage();
 		this.alphaMask = alpha;
 		applyColorMask();
 	}
 	public void setColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+		endPrimitivesKeepImage();
 		this.redMask = red;
 		this.greenMask = green;
 		this.blueMask = blue;
@@ -491,6 +501,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		color.set(clearColor);
 	}
 	public void setClearColor(Color4f color) {
+		endPrimitivesKeepImage();
 		if(color.equals(clearColor)) return;
 		clearColor.set(color);
 		applyClearColor();
@@ -504,7 +515,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return this.drawingMode;
 	}
 	public void setDrawingMode(DrawingMode drawingMode) {
-		endPrimitives();
+		endPrimitivesKeepImage();
 		this.drawingMode = drawingMode; 
 		applyDrawingMode();
 	}
@@ -558,6 +569,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return lineWidth;
 	}
 	public void setLineWidth(float width) {
+		endPrimitivesKeepImage();
 		lineWidth = width;
 		applyLineWidth();
 	}
@@ -565,6 +577,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		return diameter / 2f;
 	}
 	public void setPointRadius(float radius) {
+		endPrimitivesKeepImage();
 		this.diameter = radius * 2f;
 		applyPointSize();
 	}
@@ -829,13 +842,12 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		
 	    	}
 		}
-		endPrimitives();
 	}
 
-	public void setPolygonAntialiasing(boolean enabled) {
+//	public void setPolygonAntialiasing(boolean enabled) {
 //		polygonAntialiasing = enabled;
 //		applyPolygonAntialiasing();
-	}
+//	}
 	public boolean getPolygonAntialiasing() {
 		return false;//polygonAntialiasing;
 	}
@@ -852,6 +864,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 	
 	public void setLineAntialiasing(boolean enabled) {
+		endPrimitivesKeepImage();
 		lineAntialiasing = enabled;
 		applyLineAntialiasing();
 	}

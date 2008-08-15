@@ -15,15 +15,16 @@
  */
 package ch.blackspirit.graphics.demo;
 
-import java.awt.AWTEvent;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Random;
 
 import javax.vecmath.Color4f;
 
+import net.java.games.input.Controller;
+import net.java.games.input.ControllerEnvironment;
+import net.java.games.input.Keyboard;
+import net.java.games.input.Component.Identifier.Key;
+import net.java.games.input.Controller.Type;
 import ch.blackspirit.graphics.CanvasFactory;
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.DrawingMode;
@@ -49,22 +50,23 @@ import ch.blackspirit.graphics.util.ColorGradientFactory;
 public class SceneDemo  {
 	private final static int WIDTH = 800;
 	private final static int HEIGHT = 600;
-	private static boolean up = false;
-	private static boolean down = false;
-	private static boolean left = false;
-	private static boolean right = false;
-	private static float posX = 380;
-	private static float posY = 450;
+	
+	private boolean up = false;
+	private boolean down = false;
+	private boolean left = false;
+	private boolean right = false;
+	private float posX = 380;
+	private float posY = 250;
 	
 	// Variables for drawing animation
-	Animation<Frame> walk;
-	int xOffset = 0;
-	int lightShineRandom1 = 0;
-	int lightShineRandom2 = 0;
-	int lightShineRandom3 = 0;
-	int lightShineRandom4 = 0;
+	private Animation<Frame> walk;
+	private int xOffset = 0;
+	private int lightShineRandom1 = 0;
+	private int lightShineRandom2 = 0;
+	private int lightShineRandom3 = 0;
+	private int lightShineRandom4 = 0;
 
-	RealtimeCanvas canvas;
+	private RealtimeCanvas canvas;
 	
 	public static void main(String []args) throws IOException {
 		SceneDemo demo = new SceneDemo();
@@ -72,6 +74,15 @@ public class SceneDemo  {
 	}
 	
 	public void start() throws IOException {
+		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
+		Keyboard keyboard = null;
+		for(Controller controller: controllerEnv.getControllers()) {
+			if(controller.getType() == Type.KEYBOARD) {
+				keyboard = (Keyboard)controller;
+				break;
+			}
+		}
+		
 		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
 
 		// Create a fullscreen realtime canvas using the current display mode.
@@ -82,43 +93,6 @@ public class SceneDemo  {
 			canvas = factory.createRealtimeCanvasFullscreen();
 		}
 		
-		// Add Escape and Q as quitting keys
-		Toolkit t = Toolkit.getDefaultToolkit();
-		t.addAWTEventListener(new AWTEventListener() {
-				long lastVSyncChange = 0;
-				public void eventDispatched(AWTEvent event) {
-					KeyEvent ke = (KeyEvent)event;
-					if(ke.getKeyCode() == KeyEvent.VK_S) {
-						long time = System.currentTimeMillis();
-						if(time - lastVSyncChange > 1000) {
-							canvas.setVSync(!canvas.getVSync());
-							lastVSyncChange = time;
-						}
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_ESCAPE ||
-							ke.getKeyCode() == KeyEvent.VK_Q) {
-						canvas.dispose();
-						System.exit(0);
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_LEFT) {
-						if(ke.getID() == KeyEvent.KEY_PRESSED) left = true;
-						else if(ke.getID() == KeyEvent.KEY_RELEASED) left = false; 
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_RIGHT) {
-						if(ke.getID() == KeyEvent.KEY_PRESSED) right = true;
-						else if(ke.getID() == KeyEvent.KEY_RELEASED) right = false; 
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_UP) {
-						if(ke.getID() == KeyEvent.KEY_PRESSED) up = true;
-						else if(ke.getID() == KeyEvent.KEY_RELEASED) up = false; 
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_DOWN) {
-						if(ke.getID() == KeyEvent.KEY_PRESSED) down = true;
-						else if(ke.getID() == KeyEvent.KEY_RELEASED) down = false; 
-					}
-				}
-			}, AWTEvent.KEY_EVENT_MASK);
-
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
 		canvas.setWindowTitle("Image Demo");
@@ -215,6 +189,7 @@ public class SceneDemo  {
 		// Draw the light shine
 		imageContext.setGraphicsListener(new GraphicsListener() {
 			public void draw(View view, Graphics graphics) {
+				view.setCamera(-400+posX, -300+posY, 0);
 				graphics.setClearColor(new Color4f(.0f,.0f,.0f, .98f));
 				graphics.clear();
 				drawLight(graphics, walk, light, posX + xOffset, posY, lightShineRandom3);
@@ -225,7 +200,7 @@ public class SceneDemo  {
 			}
 			public void init(View view, Graphics renderer) {
 				view.setCamera(0, 0, 0);
-				view.setSize(256, 256);
+				view.setSize(1024, 1024);
 			}
 			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
 		});
@@ -249,22 +224,6 @@ public class SceneDemo  {
 				lightShineTime += elapsedTime;
 	
 				angle += elapsedTime / 20000000f;
-
-				// update animation
-				animLeft.update(elapsedTime);
-				animFront.update(elapsedTime);
-				animBack.update(elapsedTime);
-				animFire.update(elapsedTime);
-
-				renderer.setColor(white);
-
-				for(int x = 0; x <= 800; x+=grass.getWidth() * 2) {
-					for(int y = 0; y <= 600; y+=grass.getHeight() * 2) { 
-						renderer.translate(-x, -y);
-						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
-						renderer.clearTransformation();
-					}
-				}
 
 				// Walking
 				if(up && !down) {
@@ -302,6 +261,31 @@ public class SceneDemo  {
 						xOffset = 1;
 					}
 				}
+				
+				view.setCamera(posX, posY, 0);
+				
+				// update animation
+				animLeft.update(elapsedTime);
+				animFront.update(elapsedTime);
+				animBack.update(elapsedTime);
+				animFire.update(elapsedTime);
+
+				renderer.setColor(white);
+
+				long gleft = (long)posX -400 - grass.getWidth()*2;
+				gleft = gleft - (gleft % (grass.getWidth()*2));
+				
+				long gtop = (long)posY -300 - grass.getHeight()*2;
+				gtop = gtop - (gtop % (grass.getHeight()*2));
+
+				for(long x = gleft; x <= gleft + 800 + grass.getWidth()*2; x+=grass.getWidth() * 2) {
+					for(long y = gtop; y <= gtop + 600 + grass.getHeight()*2; y+=grass.getHeight() * 2) { 
+						renderer.translate(-x, -y);
+						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
+						renderer.clearTransformation();
+					}
+				}
+
 				renderer.translate(-(posX + xOffset), -posY);
 				walk.draw(renderer, walk.getWidth(), walk.getHeight(), flip);
 				renderer.clearTransformation();
@@ -314,16 +298,18 @@ public class SceneDemo  {
 
 				// Draw darkness
 				renderer.clearTransformation();
+				renderer.translate(-posX+400, -posY+300);
 				renderer.drawImage(dark, 1024, 1024);
 				
 				renderer.setColor(white);
-				renderer.translate(-50, -50);
+				renderer.clearTransformation();
+				renderer.translate(-posX+400-50, -posY+300-50);
 				renderer.drawText("Scene Demo");
 
 				// draw frames per second
 				renderer.setColor(red);
 				renderer.clearTransformation();
-				renderer.translate(-650, -580);
+				renderer.translate(-posX+400-650, -posY+300-580);
 				renderer.drawText("FPS:" + fps);
 							
 				// calculate frames per second every second
@@ -356,7 +342,32 @@ public class SceneDemo  {
 		// Cleaning up
 		System.gc();
 		
+		long lastVSyncChange = 0;
 		while(true) {
+			if(keyboard != null) {
+				keyboard.poll();
+			
+				// End demo
+				if(keyboard.isKeyDown(Key.Q) || keyboard.isKeyDown(Key.ESCAPE)) {
+					canvas.dispose();
+					System.exit(0);
+				}
+				// VSync
+				if(keyboard.isKeyDown(Key.S)) {
+					long time = System.currentTimeMillis();
+					if(time - lastVSyncChange > 1000) {
+						canvas.setVSync(!canvas.getVSync());
+						lastVSyncChange = time;
+					}
+				}
+				
+				// Character movement
+				down = keyboard.isKeyDown(Key.DOWN);
+				left = keyboard.isKeyDown(Key.LEFT);
+				right = keyboard.isKeyDown(Key.RIGHT);
+				up = keyboard.isKeyDown(Key.UP);
+			}
+
 			imageContext.draw();
 			canvas.draw();
 		}
@@ -369,8 +380,8 @@ public class SceneDemo  {
 
 		graphics.setColor(new Color4f(.0f,.0f,.0f,1f));
 		graphics.setDrawingMode(DrawingMode.MULTIPLY);
-		graphics.translate(-lightPosX/4, -lightPosY/4);
-		graphics.drawImage(light,shineRadX*2/4, shineRadY*2/4);
+		graphics.translate(-lightPosX, -lightPosY);
+		graphics.drawImage(light,shineRadX*2, shineRadY*2);
 		graphics.clearTransformation();
 		graphics.setDrawingMode(DrawingMode.ALPHA_BLEND);
 	}

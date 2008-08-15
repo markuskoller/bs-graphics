@@ -19,19 +19,31 @@ package ch.blackspirit.graphics.particle;
 /**
  * @author Markus Koller
  */
-public class DefaultParticleManager implements ParticlePool<Particle> {
-	private Object[] particles = new Particle[10000];
+public class DefaultParticlePool<T extends Particle> implements ParticlePool<T> {
+	private Object[] particles = new Object[10000];
 	private int index = 0;
 	
-	// TODO make generic like objectpool with prototype (or use object pool of type particle)
+	private Class<? extends T> clazz;
 	
-	public Particle getParticle() {
+	public DefaultParticlePool(Class<? extends T> clazz) {
+		super();
+		this.clazz = clazz;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public T getParticle() {
 		index--;
 		if(index >= 0) {
-			return (Particle)particles[index];
+			return (T)particles[index];
 		} else {
 			index++;
-			return new Particle();
+			try {
+				return clazz.newInstance();
+			} catch (InstantiationException e) {
+				throw new RuntimeException("Constructor without arguments must exist!", e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException("Constructor must be public!", e);
+			}
 		}
 	}
 	public void freeParticle(Particle particle) {

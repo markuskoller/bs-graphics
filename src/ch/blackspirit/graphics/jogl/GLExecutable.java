@@ -22,6 +22,5 @@ import javax.media.opengl.GLDrawable;
  * @author Markus Koller
  */
 interface GLExecutable {
-	// TODO remove gl
 	public void execute(GLDrawable drawable, GL gl);
 }

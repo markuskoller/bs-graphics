@@ -24,10 +24,18 @@ import java.io.IOException;
 
 import javax.media.Codec;
 import javax.media.Demultiplexer;
+import javax.media.Format;
 import javax.media.MediaLocator;
 import javax.media.PlugInManager;
+import javax.media.format.AudioFormat;
 import javax.swing.JFileChooser;
 import javax.vecmath.Color4f;
+
+import net.java.games.input.Controller;
+import net.java.games.input.ControllerEnvironment;
+import net.java.games.input.Keyboard;
+import net.java.games.input.Component.Identifier.Key;
+import net.java.games.input.Controller.Type;
 
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Graphics;
@@ -54,6 +62,15 @@ public class VideoDemo {
 	}
 	
 	public void start() throws IOException, InterruptedException {
+		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
+		Keyboard keyboard = null;
+		for(Controller controller: controllerEnv.getControllers()) {
+			if(controller.getType() == Type.KEYBOARD) {
+				keyboard = (Keyboard)controller;
+				break;
+			}
+		}
+
 		// Getting video to show
 		JFileChooser filechooser = new JFileChooser();
 		filechooser.setMultiSelectionEnabled(false);
@@ -70,27 +87,6 @@ public class VideoDemo {
 			canvas = factory.createRealtimeCanvasFullscreen();
 		}
 		
-		// Add Escape and Q as quitting keys
-		Toolkit t = Toolkit.getDefaultToolkit();
-		t.addAWTEventListener(new AWTEventListener() {
-				long lastVSyncChange = 0;
-				public void eventDispatched(AWTEvent event) {
-					KeyEvent ke = (KeyEvent)event;
-					if(ke.getKeyCode() == KeyEvent.VK_S) {
-						long time = System.currentTimeMillis();
-						if(time - lastVSyncChange > 1000) {
-							canvas.setVSync(!canvas.getVSync());
-							lastVSyncChange = time;
-						}
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_ESCAPE ||
-							ke.getKeyCode() == KeyEvent.VK_Q) {
-						canvas.dispose();
-						System.exit(0);
-					}
-				}
-			}, AWTEvent.KEY_EVENT_MASK);
-
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
 		canvas.setWindowTitle("Video Demo");
@@ -112,6 +108,10 @@ public class VideoDemo {
 		    		audioNative.getSupportedOutputFormats(null),
 		            PlugInManager.CODEC);
 
+//		    for(Format format: audioNative.getSupportedInputFormats()) {
+//		    	System.out.println(format);
+//		    }
+		    
 //		    String FFMPEG_VIDEO = "com.omnividea.media.codec.video.JavaDecoder"; 
 //		    Codec video = (Codec) Class.forName(FFMPEG_VIDEO).newInstance();
 //		    PlugInManager.addPlugIn(FFMPEG_VIDEO,
@@ -124,6 +124,13 @@ public class VideoDemo {
 //		    PlugInManager.addPlugIn(FFMPEG_AUDIO,
 //		    		audio.getSupportedInputFormats(),
 //		    		audio.getSupportedOutputFormats(null),
+//		            PlugInManager.CODEC);
+
+//			String MP3 = "com.sun.media.codec.audio.mp3.JavaDecoder";
+//		    Codec mp3 = (Codec) Class.forName(MP3).newInstance();
+//		    PlugInManager.addPlugIn(MP3,
+//		            mp3.getSupportedInputFormats(),
+//		            mp3.getSupportedOutputFormats(null),
 //		            PlugInManager.CODEC);
 
 			String FFMPEG_DEMUX = "com.omnividea.media.parser.video.Parser"; 
@@ -198,7 +205,29 @@ public class VideoDemo {
 		
 		if(!videoRenderer.start()) System.exit(0);
 		
+		long lastVSyncChange = 0;
 		while(true) {
+			if(keyboard != null) {
+				keyboard.poll();
+			
+				// End demo
+				if(keyboard.isKeyDown(Key.Q) || keyboard.isKeyDown(Key.ESCAPE)) {
+					canvas.dispose();
+					System.exit(0);
+				}
+				// VSync
+				if(keyboard.isKeyDown(Key.S)) {
+					long time = System.currentTimeMillis();
+					if(time - lastVSyncChange > 1000) {
+						canvas.setVSync(!canvas.getVSync());
+						lastVSyncChange = time;
+					}
+				}
+			}
+			
+			// On some systems vsync blocks video decoding, so we give it some time
+			Thread.sleep(10);
+			
 			canvas.draw();
 		}
 	}

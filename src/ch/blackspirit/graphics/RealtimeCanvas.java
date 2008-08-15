@@ -49,4 +49,12 @@ public interface RealtimeCanvas extends Canvas {
 	 */
 	public void setFullscreen();
 	public boolean isFullscreen();
+	
+	// FEATURE real-time canvas mouse functionality
+//	public void setMouseImage(URL image);
+//	public void setMouseVisible(boolean visible);
+
+	// FEATURE real-time canvas region information
+//	public int getLocationTop();
+//	public int getLocationLeft();
 }

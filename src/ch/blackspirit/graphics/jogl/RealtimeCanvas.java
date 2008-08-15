@@ -16,6 +16,7 @@
 package ch.blackspirit.graphics.jogl;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -31,6 +32,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLCapabilitiesChooser;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLException;
@@ -77,7 +79,7 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 	
 	private final View view = new View();
 	private final ch.blackspirit.graphics.jogl.ResourceManager resourceManager = 
-		new ch.blackspirit.graphics.jogl.ResourceManager(this);
+		new ch.blackspirit.graphics.jogl.ResourceManager(this, this);
 	private final ch.blackspirit.graphics.jogl.ImageFactory imageFactory = 
 		new ch.blackspirit.graphics.jogl.ImageFactory(resourceManager);
 	private GraphicsDelegate delegate;
@@ -125,11 +127,13 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		canvasGraphics = new CanvasGraphics(delegate, view);
         canvasGLEventListener = new CanvasGLEventListener(this, resourceManager, imageFactory, view, canvasGraphics);
         canvasGLEventListener.setDebugGL(properties.isDebugGL());
-        canvasGLEventListener.setTraceGL(properties.isTraceGL());
-        canvasRenderContext.setMainGLEventListener(canvasGLEventListener);
+        canvasGLEventListener.setTrace(properties.isTrace());
+        canvasGLEventListener.setTraceLevel(properties.getTraceLogLevel());
+		canvasRenderContext.setMainGLEventListener(canvasGLEventListener);
         
         executableListener.setDebugGL(properties.isDebugGL());
-        executableListener.setTraceGL(properties.isTraceGL());
+        executableListener.setTrace(properties.isTrace());
+        executableListener.setTraceLevel(properties.getTraceLogLevel());
 
 		SupportGLExecutable supportGLExecutable = new SupportGLExecutable();
 		execute(supportGLExecutable);
@@ -140,7 +144,7 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 	public boolean execute(GLExecutable glExecutable) {
 		try {
 			GL gl = GLU.getCurrentGL();
-			glExecutable.execute(null, gl);
+			glExecutable.execute(GLContext.getCurrent().getGLDrawable(), gl);
 		} catch(GLException e) {
 			// no context current
 			try {
@@ -190,7 +194,7 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		}
 
 		if(canvas != null) canvas.getContext().destroy();
-		canvas = new GLCanvas(CAPABILITIES, null, glContext, null);
+		canvas = new NoPaintGLCanvas(CAPABILITIES, null, glContext, null);
 		if(glContext == null) glContext = canvas.getContext();
 		canvasRenderContext.setDrawable(canvas);
         canvas.setFocusable(false);
@@ -269,7 +273,9 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		}
 		frame.setUndecorated(true);
 		frame.setResizable(false);
+		frame.pack();
 		frame.setVisible(true);
+
 		dev.setFullScreenWindow(frame);
 		if(displayMode!=null) {
 			try {
@@ -300,12 +306,11 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 			initialize(width, height);
 			frame.getContentPane().add(canvas);
 		}
-		// FIXME window is 2 pixels to wide and high..
-		frame.getContentPane().setPreferredSize(new Dimension(width-2, height-2));
-//		canvas.setPreferredSize(new Dimension(width, height));
-//		frame.setUndecorated(false);
-		frame.pack();
+		frame.getContentPane().setPreferredSize(new Dimension(width, height));
+
+		// Resizable must be set before pack for proper sizes
 		frame.setResizable(false);
+		frame.pack();
 		frame.setVisible(true);
 	
 		fullscreen = false;
@@ -380,6 +385,8 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 	public void setFullscreen() {
 		setFullscreen(null);
 	}
+	
+	// TODO extend GLCanvas and override paint(Graphics) method to keep Swing/AWT from trigger rendering 
 	public void draw() {
 //		if(frame.isFocused()) {
 		if(frame.isVisible())
@@ -461,5 +468,26 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 			return maxImageDrawingWidth;
 		}
 		throw new IllegalArgumentException("No such property: " + property);
-	}	
+	}
+	
+	/**
+	 * It is important that no other thread displays the canvas.
+	 * Otherwise control over threading gets lost!
+	 */
+	private static class NoPaintGLCanvas extends GLCanvas {
+		private static final long serialVersionUID = 1L;
+		public NoPaintGLCanvas() {
+			super();
+		}
+		public NoPaintGLCanvas(GLCapabilities capabilities,
+				GLCapabilitiesChooser chooser, GLContext shareWith,
+				GraphicsDevice device) {
+			super(capabilities, chooser, shareWith, device);
+		}
+		public NoPaintGLCanvas(GLCapabilities capabilities) {
+			super(capabilities);
+		}
+		// Paint does nothing!
+		public void paint(Graphics g) {}
+	}
 }

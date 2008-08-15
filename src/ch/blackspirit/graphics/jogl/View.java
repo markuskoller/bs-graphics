@@ -16,11 +16,15 @@
 package ch.blackspirit.graphics.jogl;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Markus Koller
  */
 class View implements ch.blackspirit.graphics.View {
+	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
+
 	private float width;
 	private float height;
 	private float cameraX;
@@ -39,6 +43,7 @@ class View implements ch.blackspirit.graphics.View {
 		return height;
 	}
 	public void setSize(float width, float height) {
+		if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("View size set: " + width + "x" + height);
 		this.width = width;
 		this.height = height;
 		fireViewSizeChanged();
@@ -56,16 +61,19 @@ class View implements ch.blackspirit.graphics.View {
 	}
 
 	public void setCamera(float x, float y, float angle) {
+		if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Camera set: " + x + "," + y + " - " + angle + " deg");
 		this.cameraX = x;
 		this.cameraY = y;
 		this.cameraAngle = angle;
 		fireCameraChanged();
 	}
 	public void setCameraAngle(float angle) {
+		if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Camera angle set: " + angle + " deg");
 		this.cameraAngle = angle;
 		fireCameraChanged();
 	}
 	public void setCameraPosition(float x, float y) {
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Camera position set: " + x + "," + y);
 		this.cameraX = x;
 		this.cameraY = y;
 		fireCameraChanged();

@@ -39,6 +39,9 @@ class BSGraphicsProperties {
 		}
 	}
 	
+	private String getProperty(String property, String defaultValue) {
+		return properties.getProperty(property, defaultValue);
+	}
 	private int getProperty(String property, int defaultValue) {
 		String value = properties.getProperty(property, String.valueOf(defaultValue));
 		try {
@@ -61,8 +64,15 @@ class BSGraphicsProperties {
 	public boolean isDebugGL() { 
 		return getProperty("ch.blackspirit.graphics.jogl.debug.debuggl", false);
 	}
-	public boolean isTraceGL() { 
-		return getProperty("ch.blackspirit.graphics.jogl.debug.tracegl", false);
+	public boolean isTrace() { 
+		return getProperty("ch.blackspirit.graphics.jogl.debug.trace", false);
+	}
+	public Level getTraceLogLevel() {
+		Level level = Level.INFO;
+		try {
+			level = Level.parse(getProperty("ch.blackspirit.graphics.jogl.debug.trace.log.level", "INFO"));
+		} catch(Throwable t) {}
+		return level;
 	}
 	public int getImageDrawingWidth() {
 		return getProperty(Properties.MAX_IMAGE_DRAWING_WIDTH, 1024);

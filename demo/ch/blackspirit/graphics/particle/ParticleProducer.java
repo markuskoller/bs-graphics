@@ -25,4 +25,5 @@ import java.util.List;
  */
 public interface ParticleProducer<T extends Particle> {
 	public List<T> getParticles(long elapsedTime);
+	public void setParticlePool(ParticlePool<T> particlePool);
 }

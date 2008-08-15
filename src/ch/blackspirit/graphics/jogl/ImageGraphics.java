@@ -17,6 +17,8 @@ package ch.blackspirit.graphics.jogl;
 
 import java.awt.Font;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
@@ -32,6 +34,8 @@ import ch.blackspirit.graphics.Triangle;
  * @author Markus Koller
  */
 class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListener {
+	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
+
 	private final GraphicsDelegate delegate;
 	private final View view;
 	private final Image image;
@@ -48,7 +52,9 @@ class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListener {
 	}
 	
 	void init() {
-//		delegate.prepareExternalCode();
+		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Initializing image graphics");
+
+		//		delegate.prepareExternalCode();
 		GL gl = delegate.getGL();
 		
 		// Depth Testing

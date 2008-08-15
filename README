@@ -11,11 +11,11 @@ There are known issues with the following graphics cards:
  - Intel(R) 82865G
  
 If you get issues with any other cards please report in the following forum:
-http://www.blackspirit.ch/forum
+http://www.blackspirit.ch/forum/index.php
 
 Requirements
 ------------
-Java version 1.5 or newer (also known as 5.0).
+Java version 1.5 or newer.
 
 Blackspirit Graphics requires two third-party libraries.
 
@@ -36,8 +36,8 @@ is also needed.
 
 Webstart
 --------
-I signed version of BSGraphics.jar is included with the distribution and can be used for webstart
-applications.
+A signed version of BSGraphics.jar and bsgraphics.jnlp defining the extension are 
+included with the distribution and can be used for webstart applications.
 
 Have a look at the jnlp files of the demos on 'http://www.blackspirit.ch' for an example of
 how to set up a webstart application using Blackspirit Graphics.

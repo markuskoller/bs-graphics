@@ -27,6 +27,12 @@ import java.util.List;
 import javax.vecmath.Color4f;
 import javax.vecmath.Vector2f;
 
+import net.java.games.input.Controller;
+import net.java.games.input.ControllerEnvironment;
+import net.java.games.input.Keyboard;
+import net.java.games.input.Component.Identifier.Key;
+import net.java.games.input.Controller.Type;
+
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
@@ -59,6 +65,15 @@ public class ShapeDemo  {
 	}
 	
 	public void start() throws IOException {
+		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
+		Keyboard keyboard = null;
+		for(Controller controller: controllerEnv.getControllers()) {
+			if(controller.getType() == Type.KEYBOARD) {
+				keyboard = (Keyboard)controller;
+				break;
+			}
+		}
+
 		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
 
 		// Create a fullscreen realtime canvas using the current display mode.
@@ -68,27 +83,6 @@ public class ShapeDemo  {
 		} else {
 			canvas = factory.createRealtimeCanvasFullscreen();
 		}
-
-		// Add Escape and Q as quitting keys
-		Toolkit t = Toolkit.getDefaultToolkit();
-		t.addAWTEventListener(new AWTEventListener() {
-				long lastVSyncChange = 0;
-				public void eventDispatched(AWTEvent event) {
-					KeyEvent ke = (KeyEvent)event;
-					if(ke.getKeyCode() == KeyEvent.VK_S) {
-						long time = System.currentTimeMillis();
-						if(time - lastVSyncChange > 1000) {
-							canvas.setVSync(!canvas.getVSync());
-							lastVSyncChange = time;
-						}
-					}
-					if(ke.getKeyCode() == KeyEvent.VK_ESCAPE ||
-							ke.getKeyCode() == KeyEvent.VK_Q) {
-						canvas.dispose();
-						System.exit(0);
-					}
-				}
-			}, AWTEvent.KEY_EVENT_MASK);
 
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
@@ -275,7 +269,26 @@ public class ShapeDemo  {
 		// Cleaning up
 		System.gc();
 		
+		long lastVSyncChange = 0;
 		while(true) {
+			if(keyboard != null) {
+				keyboard.poll();
+			
+				// End demo
+				if(keyboard.isKeyDown(Key.Q) || keyboard.isKeyDown(Key.ESCAPE)) {
+					canvas.dispose();
+					System.exit(0);
+				}
+				// VSync
+				if(keyboard.isKeyDown(Key.S)) {
+					long time = System.currentTimeMillis();
+					if(time - lastVSyncChange > 1000) {
+						canvas.setVSync(!canvas.getVSync());
+						lastVSyncChange = time;
+					}
+				}
+			}
+			
 			canvas.draw();
 		}
 	}

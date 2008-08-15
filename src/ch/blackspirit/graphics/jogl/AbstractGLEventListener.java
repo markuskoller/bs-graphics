@@ -15,36 +15,38 @@
  */
 package ch.blackspirit.graphics.jogl;
 
+import java.util.logging.Level;
+
 import javax.media.opengl.DebugGL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
-import javax.media.opengl.TraceGL;
 
 /**
  * GLEventListener base class handling insertion of DebugGL and TraceGL.
  * @author Markus Koller
  */
 abstract class AbstractGLEventListener implements GLEventListener {
-	private boolean traceGL = false;
+	private boolean trace = false;
 	private boolean debugGL = false;
+	private Level traceLevel = Level.INFO;
 	
 	protected void debug(GLAutoDrawable drawable) { 
 		// Install debugging and tracing in the GL pipeline
-		if(traceGL) {
+		if(trace) {
 			if(debugGL) {
 				if(!(drawable.getContext().getGL() instanceof TraceGL)) {
-					drawable.getContext().setGL(new TraceGL(new DebugGL(drawable.getContext().getGL()), System.out));
+					drawable.getContext().setGL(new TraceGL(new DebugGL(drawable.getContext().getGL()), traceLevel));
 				}
 				if(!(drawable.getGL() instanceof TraceGL)) {
-					drawable.setGL(new TraceGL(new DebugGL(drawable.getGL()), System.out));
+					drawable.setGL(new TraceGL(new DebugGL(drawable.getGL()), traceLevel));
 				}
 				
 			} else {
 				if(!(drawable.getContext().getGL() instanceof TraceGL)) {
-					drawable.getContext().setGL(new TraceGL(drawable.getContext().getGL(), System.out));
+					drawable.getContext().setGL(new TraceGL(drawable.getContext().getGL(), traceLevel));
 				}
 				if(!(drawable.getGL() instanceof TraceGL)) {
-					drawable.setGL(new TraceGL(drawable.getGL(), System.out));
+					drawable.setGL(new TraceGL(drawable.getGL(), traceLevel));
 				}
 			}
 		} else if(debugGL) {
@@ -57,16 +59,22 @@ abstract class AbstractGLEventListener implements GLEventListener {
 		}
 	}
 
-	public boolean isTraceGL() {
-		return traceGL;
+	public boolean isTrace() {
+		return trace;
 	}
-	public void setTraceGL(boolean traceGL) {
-		this.traceGL = traceGL;
+	public void setTrace(boolean trace) {
+		this.trace = trace;
 	}
 	public boolean isDebugGL() {
 		return debugGL;
 	}
 	public void setDebugGL(boolean debugGL) {
 		this.debugGL = debugGL;
+	}
+	public Level getTraceLevel() {
+		return traceLevel;
+	}
+	public void setTraceLevel(Level traceLevel) {
+		this.traceLevel = traceLevel;
 	}
 }

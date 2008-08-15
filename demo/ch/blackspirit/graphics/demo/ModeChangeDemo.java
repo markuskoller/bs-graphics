@@ -190,7 +190,6 @@ public class ModeChangeDemo  {
 		rectIns.add(rectIn);
 		final Shape rectangle = ShapeCreator.create(rectOut, rectIns);
 		
-		// TODO change to unbuffered image
 		final Image dark = canvas.getImageFactory().createImage(128, 128, true);
 		final Image darktest = canvas.getImageFactory().createImage(128, 128, true);
 //		final Image dark = canvas.getImageFactory().createBufferedImage(128, 128, BufferTypes.RGBA_4Byte);
@@ -352,8 +351,7 @@ public class ModeChangeDemo  {
 				TextureMapper.mapTexture(circle, animLeftImage, 80, 30, angle, 1);
 
 				// clear
-				// FIXME why does it fail here when changing mode
-//				renderer.clear();
+				renderer.clear();
 				
 				// update animation
 				animLeft.update(elapsedTime);
@@ -451,10 +449,6 @@ public class ModeChangeDemo  {
 //				ellipse.drawLines(renderer, false);
 				renderer.translate(-100, 0);
 				ellipsoidalArc.fillArea(renderer, false, false);
-////				
-				
-				// TODO FIXME doesn't seem todo anything here!!!
-//				renderer.clear();
 				
 				renderer.setColor(white);
 				renderer.translate(400, -100);

@@ -321,7 +321,7 @@ public class VideoRenderer implements ControllerListener {
 		    	byte[] data = (byte[])backBuffer.getBuffer();
 		    	int width = backBuffer.getWidth();
 				int ip = 0;
-			    for ( int y = 0; y < inHeight; y++ ) {
+			    for ( int y = inHeight - 1; y >= 0; y-- ) {
 					for ( int x = 0; x < inWidth; x++) {
 						int indexBase = (y * width + x) * 3;
 						data[indexBase + 2] = rawData[ip++];
@@ -334,7 +334,7 @@ public class VideoRenderer implements ControllerListener {
 		    	byte[] data = (byte[])backBuffer.getBuffer();
 		    	int width = backBuffer.getWidth();
 				int ip = 0;
-			    for ( int y = 0; y < inHeight; y++ ) {
+			    for ( int y = inHeight - 1; y >= 0; y-- ) {
 					for ( int x = 0; x < inWidth; x++) {
 						int indexBase = (y * width + x) * 4;
 						data[indexBase + 2] = rawData[ip++];
@@ -349,7 +349,7 @@ public class VideoRenderer implements ControllerListener {
 				Color4f color = new Color4f();
 				color.w = 1.0f;
 				float v = 1.0f / 255;
-			    for ( int y = 0; y < inHeight; y++ ) {
+			    for ( int y = inHeight - 1; y >= 0; y-- ) {
 					for ( int x = 0; x < inWidth; x++) {
 						color.z = v * (int)rawData[ip++];
 						color.y = v * (int)rawData[ip++];
@@ -358,7 +358,7 @@ public class VideoRenderer implements ControllerListener {
 					}
 				} 
 		    }
-			
+
 			updated = true;
 		    imageLock.unlock();
 		

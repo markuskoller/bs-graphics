@@ -73,10 +73,9 @@ class ImageFactory implements ch.blackspirit.graphics.ImageFactory {
 		if(width > maxSize || height > maxSize) {
 			throw new IllegalArgumentException("Requested image ("+ width + "x" + height + ") exceeds maximum image size: " +maxSize + "x" + maxSize + ".");
 		}
-	    if(LOGGER.isLoggable(Level.FINE)) {
-	        LOGGER.fine("Created Empty Image: DemandedImage=" + width + "x" + height); 
-	    }
-		return new ch.blackspirit.graphics.jogl.Image(width, height, resourceManager, bufferType);
+//	    if(LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Created Empty Image: DemandedImage=" + width + "x" + height); 
+
+	    return new ch.blackspirit.graphics.jogl.Image(width, height, resourceManager, bufferType);
 	}
 
 	public Image createBufferedImage(int width, int height, boolean alpha) {

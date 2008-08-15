@@ -19,6 +19,8 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLDrawable;
 import javax.media.opengl.glu.GLU;
 
+import ch.blackspirit.graphics.Canvas;
+
 import com.sun.opengl.util.texture.TextureCoords;
 
 /**
@@ -31,14 +33,23 @@ class BufferRegionUpdate implements GLExecutable {
 	public int width;
 	public int height;
 	
+	
     private int[] rowLength = new int[1];
     private int[] skipRows = new int[1];
     private int[] skipPixels = new int[1];
 
+    private final Canvas canvas;
+    
+    public BufferRegionUpdate(Canvas canvas) {
+    	this.canvas = canvas;
+    }
+    
+    // FIXME Images loaded with TextureIO having SGI or TGA texture will be upside down in buffer.. remove them from TextureIO and add TGA support using TGAImage
+    // TODO Do full buffer update using glGetTexImage for speed (glGetTexSubImage does not exist!)
 	public void execute(GLDrawable drawable, GL gl) {
-		if(AbstractGraphicsContext.isDrawing()) throw new RuntimeException("Image buffer must not be updated while drawing any graphics context");
-	    if(image.texture == null) return;
-
+	    if(image.texture == null) throw new RuntimeException("Buffer update only possible on cached images");
+	    if(!image.isBuffered()) throw new RuntimeException("Buffer update only possible on buffered images");
+	    
 	    gl.glDisable(GL.GL_DEPTH_TEST);
 	    gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
 	    
@@ -59,11 +70,29 @@ class BufferRegionUpdate implements GLExecutable {
 	    glu.gluOrtho2D(0, drawable.getWidth(), drawable.getHeight(), 0);
 	    gl.glMatrixMode(GL.GL_MODELVIEW);
 	    gl.glLoadIdentity();
-	    
+
+	    // reset base color
+	    float[] baseColorArray = new float[]{1,1,1,1};
+		gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, baseColorArray, 0);
+
+		// reset drawing mode
+		boolean isGlExtBlendSubtractSupported = canvas.getPropertyBoolean(Properties.IS_DRAWING_MODE_SUBTRACT_SUPPORTED);
+		if(isGlExtBlendSubtractSupported) {
+			gl.glBlendEquation(GL.GL_FUNC_ADD);
+		}
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+
+		// reset color mask
+		gl.glColorMask(true, true, true, true);
+		
 		image.texture.enable();
 		image.texture.bind();
-		
-		gl.glBegin(GL.GL_QUADS);
+
+		// Slow but needed!
+		gl.glClearColor(0, 0, 0, 0);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
+
+		gl.glBegin(GL.GL_TRIANGLE_STRIP);
 		gl.glColor4f(1, 1, 1, 1);
 		
 		TextureCoords coords = image.texture.getImageTexCoords();
@@ -72,10 +101,10 @@ class BufferRegionUpdate implements GLExecutable {
         gl.glVertex2f(0, 0);
         gl.glTexCoord2f(coords.right(), coords.top());
         gl.glVertex2f(image.getWidth(), 0);
-        gl.glTexCoord2f(coords.right(), coords.bottom());
-        gl.glVertex2f(image.getWidth(), image.getHeight());
         gl.glTexCoord2f(coords.left(), coords.bottom());
         gl.glVertex2f(0, image.getHeight());
+        gl.glTexCoord2f(coords.right(), coords.bottom());
+        gl.glVertex2f(image.getWidth(), image.getHeight());
 
         gl.glEnd();
         
@@ -83,19 +112,18 @@ class BufferRegionUpdate implements GLExecutable {
         gl.glGetIntegerv(GL.GL_PACK_SKIP_ROWS,   skipRows,   0); // save skipped rows
         gl.glGetIntegerv(GL.GL_PACK_SKIP_PIXELS, skipPixels, 0); // save skipped pixels
 
-        // !!!! be careful with pixelstorei.. using wrong values causes null pointers in underlying dll !!!! 
+        // ! be careful with pixelstorei.. using wrong values causes null pointers in underlying dll ! 
         gl.glPixelStorei(GL.GL_PACK_ROW_LENGTH, image.getWidth());
         gl.glPixelStorei(GL.GL_PACK_SKIP_PIXELS, x);
-        gl.glPixelStorei(GL.GL_PACK_SKIP_ROWS, image.getHeight() - y - height);
-        System.out.println("bla" + (image.getHeight() - y - height));
+        gl.glPixelStorei(GL.GL_PACK_SKIP_ROWS, y);
         
-        if(image.getBufferType() == BufferTypes.RGBA_4Byte) {
-    		gl.glReadPixels(x, image.getHeight() - y - height, width, height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image.byteBuffer);
-        } else {
-    		gl.glReadPixels(x, image.getHeight() - y - height, width, height, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, image.byteBuffer);
-        }
-		
 		image.texture.disable();
+
+		if(image.getBufferType() == BufferTypes.RGBA_4Byte) {
+    		gl.glReadPixels(x, drawable.getHeight() - (image.getHeight() - y), width, height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image.byteBuffer);
+        } else {
+    		gl.glReadPixels(x, drawable.getHeight() - (image.getHeight() - y), width, height, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, image.byteBuffer);
+        }
 
         gl.glPixelStorei(GL.GL_PACK_ROW_LENGTH,  rowLength[0]);  // restore row length
         gl.glPixelStorei(GL.GL_PACK_SKIP_ROWS,   skipRows[0]);   // restore skipped rows

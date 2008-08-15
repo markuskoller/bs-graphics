@@ -18,6 +18,8 @@ package ch.blackspirit.graphics.particle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.Vector2f;
+
 /**
  * @author Markus Koller
  */
@@ -25,6 +27,9 @@ public class Emitter<T extends Particle> {
 	private List<Initializer<T>> initializers = new ArrayList<Initializer<T>>();
 	
 	private ParticleProducer<T> particleProducer;
+	private ParticlePool<T> particlePool;
+	
+	private Vector2f position = new Vector2f();
 	
 //	<spawnInterval enabled="false" max="100.0" min="100.0"/>
 //	<spawnCount enabled="false" max="5.0" min="5.0"/>
@@ -48,8 +53,16 @@ public class Emitter<T extends Particle> {
 				Initializer<T> initializer = initializers.get(j);
 				initializer.initialize(particle);
 			}
+			particle.getPosition().add(position);
 		}
 		return produced;
+	}
+	
+	public Vector2f getPosition() {
+		return position;
+	}
+	public void setPosition(float x, float y) {
+		position.set(x, y);
 	}
 	
 	public void addInitializer(Initializer<T> initializer) {
@@ -59,4 +72,11 @@ public class Emitter<T extends Particle> {
 		return initializers.remove(initializer);
 	}
 
+	public ParticlePool<T> getParticlePool() {
+		return particlePool;
+	}
+	void setParticlePool(ParticlePool<T> particlePool) {
+		this.particlePool = particlePool;
+		particleProducer.setParticlePool(particlePool);
+	}
 }

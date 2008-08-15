@@ -20,6 +20,9 @@ import java.util.logging.Logger;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 
+import ch.blackspirit.graphics.Graphics;
+import ch.blackspirit.graphics.debug.TraceGraphics;
+
 /**
  * @author Markus Koller
  */
@@ -35,6 +38,9 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 
 	private boolean vsync = true;
 	private boolean vsyncChanged = false;
+	private boolean firstInitialization = true;
+	
+	private TraceGraphics traceGraphics = new TraceGraphics();
 
 	public CanvasGLEventListener(AbstractGraphicsContext canvas, ch.blackspirit.graphics.jogl.ResourceManager resourceManager, ImageFactory imageFactory, 
 			View view, CanvasGraphics graphics) {
@@ -51,7 +57,13 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 		graphics.init();
 		
 		if(canvas.getGraphicsListener() != null) {
-			canvas.getGraphicsListener().init(view, graphics);
+			Graphics userGraphics = graphics;
+			if(isTrace()) {
+				userGraphics = traceGraphics;
+				traceGraphics.setDelegate(graphics);
+				traceGraphics.setLevel(getTraceLevel());
+			}
+			canvas.getGraphicsListener().init(view, userGraphics);
 		}
 		
 		initiated = true;
@@ -66,13 +78,16 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 		imageFactory.setMaxTextureSize(size[0]);
 
 		applyVSync(drawable);
-		resourceManager.refreshCache();
+		if(!firstInitialization)resourceManager.refreshCache();
 		
 		listenerInit(drawable);
+
+		firstInitialization = false;
 	}
 	public void display(GLAutoDrawable drawable) {
 		debug(drawable);
 		canvas.startDrawing();
+		
 		
 		if(!initiated) {
 			listenerInit(drawable);
@@ -82,10 +97,16 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 		}
 		if(vsyncChanged) applyVSync(drawable);
 		
-		
 		resourceManager.cleanup();
+
 		if(canvas.getGraphicsListener() != null) {
-			canvas.getGraphicsListener().draw(view, graphics);
+			Graphics userGraphics = graphics;
+			if(isTrace()) {
+				userGraphics = traceGraphics;
+				traceGraphics.setDelegate(graphics);
+				traceGraphics.setLevel(getTraceLevel());
+			}
+			canvas.getGraphicsListener().draw(view, userGraphics);
 		}
 		
 		graphics.endFrame();

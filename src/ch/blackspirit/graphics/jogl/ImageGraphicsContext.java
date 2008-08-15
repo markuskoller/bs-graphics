@@ -22,7 +22,9 @@ import java.util.logging.Logger;
 import javax.media.opengl.GLAutoDrawable;
 
 import ch.blackspirit.graphics.Canvas;
+import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsListener;
+import ch.blackspirit.graphics.debug.TraceGraphics;
 
 /**
  * @author Markus Koller
@@ -40,6 +42,8 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 	private View view = new View();
 	private boolean disposed = false;
 	private boolean initiated = false;
+	
+	private TraceGraphics traceGraphics = new TraceGraphics();
 
 	public ImageGraphicsContext(Image image, RenderContext context, ResourceManager resourceManager, Canvas canvas, BSGraphicsProperties properties) {
 		super();
@@ -52,7 +56,8 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 		this.graphics = new ImageGraphics(image, delegate, this.resourceManager, view);
 		this.glEventListener = new ImageGLEventListener(this);
 		this.glEventListener.setDebugGL(properties.isDebugGL());
-		this.glEventListener.setTraceGL(properties.isTraceGL());
+		this.glEventListener.setTrace(properties.isTrace());
+		this.glEventListener.setTraceLevel(properties.getTraceLogLevel());
 	}
 
 	public GraphicsDelegate getGraphicsDelegate() {
@@ -76,17 +81,12 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 	}
 
 	public void draw() {
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context start draw");
 		if(disposed) throw new RuntimeException("Draw must not be called after disposal.");
-		
 		context.getDrawable().setAutoSwapBufferMode(false);
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Setting GL event listener");
 		context.setGLEventListener(glEventListener);
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Calling drawable display");
 		context.getDrawable().display();
 		context.getDrawable().setAutoSwapBufferMode(true);
 		context.resetGLEventListener();
-		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context end draw");
 	}
 
 	public GraphicsListener getGraphicsListener() {
@@ -106,17 +106,25 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 		}
 		
 		public void init(GLAutoDrawable drawable) {
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context initializing");
 			debug(drawable);
 			LOGGER.info("Initializing image graphics context");
 			if(context.graphicsListener != null) {
-				context.graphicsListener.init(view, graphics);
+				Graphics userGraphics = graphics;
+				if(isTrace()) {
+					userGraphics = traceGraphics;
+					traceGraphics.setDelegate(graphics);
+					traceGraphics.setLevel(getTraceLevel());
+				}
+				context.graphicsListener.init(view, userGraphics);
 			}			
 			initiated = true;
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context initialized");
 		}
 		public void display(GLAutoDrawable drawable) {
 			debug(drawable);
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context start drawing");
+			
+			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context displaying");
+			
 			startDrawing();
 			
 			// initiate graphics every time as many image graphics contexts render on the same drawable
@@ -127,7 +135,13 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 			resourceManager.cleanup();
 
 			if(context.graphicsListener != null) {
-				context.graphicsListener.draw(view, graphics);
+				Graphics userGraphics = graphics;
+				if(isTrace()) {
+					userGraphics = traceGraphics;
+					traceGraphics.setDelegate(graphics);
+					traceGraphics.setLevel(getTraceLevel());
+				}
+				context.graphicsListener.draw(view, userGraphics);
 			}
 			
 			delegate.endFrame();
@@ -146,7 +160,6 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 			image.texture.disable();
 			
 			endDrawing();
-			if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Image graphics context end drawing");
 		}
 		public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {}
 		public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {}

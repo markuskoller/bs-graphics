@@ -74,6 +74,10 @@ public final class BufferTypes {
 			((byte[])image.getBuffer())[(y * image.getWidth() + x) * BYTES + BLUE_INDEX] = (byte)(color.z * 255);
 			((byte[])image.getBuffer())[(y * image.getWidth() + x) * BYTES + ALPHA_INDEX] = (byte)(color.w * 255);
 		}
+		
+		public String toString() {
+			return BufferTypes.class.getName() + ".RGBA_4Byte";
+		}
 	};
 	/**
 	 * 3 Byte RGB buffer.<br/>
@@ -118,6 +122,10 @@ public final class BufferTypes {
 			((byte[])image.getBuffer())[(y * image.getWidth() + x) * BYTES + RED_INDEX] = (byte)(color.x * 255);
 			((byte[])image.getBuffer())[(y * image.getWidth() + x) * BYTES + GREEN_INDEX] = (byte)(color.y * 255);
 			((byte[])image.getBuffer())[(y * image.getWidth() + x) * BYTES + BLUE_INDEX] = (byte)(color.z * 255);
+		}
+
+		public String toString() {
+			return BufferTypes.class.getName() + ".RGB_3Byte";
 		}
 	};
 }
