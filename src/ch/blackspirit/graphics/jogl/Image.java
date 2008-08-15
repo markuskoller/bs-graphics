@@ -31,7 +31,7 @@ import com.sun.opengl.util.texture.TextureIO;
 /**
  * @author Markus Koller
  */
-public class Image implements ch.blackspirit.graphics.Image {
+class Image implements ch.blackspirit.graphics.Image {
 	private final int width;
 	private final int height;
 	private final URL url;
