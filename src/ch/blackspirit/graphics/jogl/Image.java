@@ -144,6 +144,7 @@ public class Image implements ch.blackspirit.graphics.Image {
 			byteBuffer = ByteBuffer.wrap(bytes);
 			
 			textureData = new TextureData(GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, false, false, true, byteBuffer, null);
+			textureData.setRowLength(width);
 			if(textureData.getPixelFormat() != GL.GL_RGBA) throw new RuntimeException("Unexpected pixel format");
 			this.alpha = true;
 		} else if(bufferType == BufferTypes.RGB_3Byte) {
@@ -152,6 +153,7 @@ public class Image implements ch.blackspirit.graphics.Image {
 			byteBuffer = ByteBuffer.wrap(bytes);
 			
 			textureData = new TextureData(GL.GL_RGB, width, height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, false, false, true, byteBuffer, null);
+			textureData.setRowLength(width);
 			if(textureData.getPixelFormat() != GL.GL_RGB) throw new RuntimeException("Unexpected pixel format");
 			this.alpha = false;
 		} else {
@@ -202,6 +204,7 @@ public class Image implements ch.blackspirit.graphics.Image {
 				ByteBuffer tempByteBuffer = ByteBuffer.wrap(tempBytes);
 				
 				TextureData data = new TextureData(pixelFormat, width, height, 0, pixelFormat, GL.GL_UNSIGNED_BYTE, false, false, false, tempByteBuffer, null);
+				data.setRowLength(width);
 				if(data.getPixelFormat() != pixelFormat) throw new RuntimeException("Unexpected pixel format");
 				return data;
 			}
