@@ -50,8 +50,8 @@ public class CacheUpdateTest {
 			bytes[i * 3 + (imageWidth * 3 * (imageHeight - 1))] = (byte)255;
 		}
 		
-		bw.updateCache();
-		bw.updateCache(0, 0, 10,1);
+//		bw.updateCache();
+		bw.updateCache(0, 0, 10,10);
 
 		System.gc();
 		

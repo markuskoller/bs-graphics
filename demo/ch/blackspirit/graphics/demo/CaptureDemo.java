@@ -41,7 +41,6 @@ import ch.blackspirit.graphics.anim.Animation;
 import ch.blackspirit.graphics.anim.AnimationImpl;
 import ch.blackspirit.graphics.anim.Frame;
 import ch.blackspirit.graphics.anim.FrameImpl;
-import ch.blackspirit.graphics.debug.TraceGraphics;
 import ch.blackspirit.graphics.jogl.BufferTypes;
 import ch.blackspirit.graphics.jogl.CanvasFactory;
 import ch.blackspirit.graphics.util.AWTUtil;

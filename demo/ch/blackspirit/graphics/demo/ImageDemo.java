@@ -15,10 +15,6 @@
  */
 package ch.blackspirit.graphics.demo;
 
-import java.awt.AWTEvent;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 import javax.vecmath.Color4f;
@@ -28,7 +24,6 @@ import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
 import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller.Type;
-
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Flip;
 import ch.blackspirit.graphics.Graphics;

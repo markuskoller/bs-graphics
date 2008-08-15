@@ -15,11 +15,7 @@
  */
 package ch.blackspirit.graphics.demo;
 
-import java.awt.AWTEvent;
 import java.awt.Font;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +28,6 @@ import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
 import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller.Type;
-
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;

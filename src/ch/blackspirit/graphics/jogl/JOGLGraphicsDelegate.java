@@ -135,27 +135,12 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	
 	public void clear() {
 		endPrimitivesKeepImage();
-//		setClearColor(new Color4f(0,0,0,1));
-//		System.out.println("before");
 		drawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT);
-//		System.out.println("after");
-		
-//		ch.blackspirit.graphics.shape.Triangle t = new ch.blackspirit.graphics.shape.Triangle();
-//		t.setColor(0, clearColor);
-//		t.setColor(1, clearColor);
-//		t.setColor(2, clearColor);
-//		t.getPoint(0).set(-10000, -10000);
-//		t.getPoint(1).set(10000, -10000);
-//		t.getPoint(2).set(-10000, 10000);
-//		drawTriangle(t, true);
-//		t.getPoint(0).set(10000, -10000);
-//		t.getPoint(1).set(10000, 10000);
-//		t.getPoint(2).set(-10000, 10000);
-//		drawTriangle(t, true);
-//		startPrimitive(Primitive.IMAGE, null);
 	}
 	
 	public void setColor(Color4f color) {
+		// glEnd should not be necessary here, but my FireGL V3200 disagrees!
+		endPrimitivesKeepImage();
 	    this.color.set(color);
 	    applyColor();
 	}
@@ -319,8 +304,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 			// LINES AND POINTS NOT CURRENTLY OPTIMIZED
 			if(primitive != drawable.getLastPrimitive() || 
 					primitive == Primitive.LINE || primitive == Primitive.POINT || primitive == Primitive.TEXTURED_TRIANGLE) {
-//				if(primitive == null) System.out.println("end " + primitive);
-//				else System.out.println("end " + primitive.name());
 				drawable.getGL().glEnd();
 				ended = true;
 			} 
@@ -336,18 +319,14 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 			}
 			if(drawable.getLastImage() != null && image != null) {
 				if(drawable.getLastImage().texture.getTarget() != image.texture.getTarget()) {
-//					System.out.println("disable" + lastImage.getURL());
 					drawable.getLastImage().texture.disable();
-//					System.out.println("enable" + image.getURL());
 					image.texture.enable();
 				}
 			} else {
 				if(drawable.getLastImage() != null) { 
-//					System.out.println("disable" + lastImage.getURL());
 					drawable.getLastImage().texture.disable();
 				}
 				if(image != null) {
-//					System.out.println("enable" + image.getURL());
 					image.texture.enable();
 				}
 			}
@@ -357,7 +336,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		}
 		// start new primitive if necessary
 		if(primitive != null && ended) {
-//			System.out.println("begin " + primitive.name());
 			GL gl = drawable.getGL();
 			if(primitive == Primitive.POINT) {
 				gl.glBegin(GL.GL_POINTS);
@@ -368,17 +346,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 			if(primitive == Primitive.TRIANGLE || primitive == Primitive.TEXTURED_TRIANGLE) {
 				gl.glBegin(GL.GL_TRIANGLES);
 			}
-//			if(primitive == Primitive.TEXTURED_TRIANGLE) {
-//				// Disable polygon anti-aliasing due to a NVidia driver bug
-//				// gl.glDisable(GL.GL_POLYGON_SMOOTH);
-//				System.out.println("textri");
-//				image.texture.enable();
-//				System.out.println(drawable.getGL().glIsEnabled(image.texture.getTarget()));
-//				gl.glBegin(GL.GL_TRIANGLES);
-//			}
 			if(primitive == Primitive.IMAGE) {
-				// Disable polygon anti-aliasing due to a NVidia driver bug
-				// gl.glDisable(GL.GL_POLYGON_SMOOTH);
 				gl.glBegin(GL.GL_QUADS);
 			}
 			
@@ -391,10 +359,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	public void getBaseColor(Color4f color) {
 		color.set(baseColor);
 	}
-
-//	public void prepareExternalCode() {
-//		endPrimitives();
-//	}
 
 	public void rotate(float angle) {
 		endPrimitivesKeepImage();

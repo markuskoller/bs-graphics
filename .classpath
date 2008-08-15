@@ -24,10 +24,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="BSGraphics/native/win"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/mp3plugin.jar"/>
-	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
-	<classpathentry kind="lib" path="lib/mp3spi1.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/tritonus_share.jar"/>
 	<classpathentry kind="src" output="bin/test" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin/default"/>

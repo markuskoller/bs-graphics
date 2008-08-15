@@ -17,7 +17,6 @@ package ch.blackspirit.graphics.jogl;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ch.blackspirit.graphics.BufferType;

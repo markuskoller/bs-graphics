@@ -254,7 +254,7 @@ public class ModeChangeDemo  {
 		animFire.addFrame(new FrameImpl(campfire, 120000000,196, 1, 64, 80));
 		animFire.setRepeated(true);
 
-		final Color4f red = new Color4f(1,0,0,1);
+//		final Color4f red = new Color4f(1,0,0,1);
 		final Color4f white = new Color4f(1,1,1,1);
 				
 		ColorGradientFactory gradientFactory = new ColorGradientFactory();

@@ -1,17 +1,8 @@
-Blackspirit Graphics
-====================
-Version: 2.0 Beta 3
+Blackspirit Graphics 2.0 Beta 3
+===============================
 
 For information on changes and versions or further documentation please refer to 
 'http://www.blackspirit.ch'.
-
-Compatibility
--------------
-There are known issues with the following graphics cards:
- - Intel(R) 82865G
- 
-If you get issues with any other cards please report in the following forum:
-http://www.blackspirit.ch/forum/index.php
 
 Requirements
 ------------
@@ -37,7 +28,7 @@ is also needed.
 Webstart
 --------
 A signed version of BSGraphics.jar and bsgraphics.jnlp defining the extension are 
-included with the distribution and can be used for webstart applications.
+included with the distribution and can be used (with changes) for webstart applications.
 
 Have a look at the jnlp files of the demos on 'http://www.blackspirit.ch' for an example of
 how to set up a webstart application using Blackspirit Graphics.
