@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="ImageDemo.jnlp">
+<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="bsgraphics.jnlp">
 	<information>
 		<title>Blackspirit Graphics</title>
 		<vendor>Markus Koller</vendor>
