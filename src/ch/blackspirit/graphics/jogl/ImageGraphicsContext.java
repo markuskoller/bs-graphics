@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 
 import javax.media.opengl.GLAutoDrawable;
 
-import ch.blackspirit.graphics.Canvas;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsListener;
 import ch.blackspirit.graphics.debug.TraceGraphics;
@@ -45,12 +44,12 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 	
 	private TraceGraphics traceGraphics = new TraceGraphics();
 
-	public ImageGraphicsContext(Image image, RenderContext context, ResourceManager resourceManager, Canvas canvas, BSGraphicsProperties properties) {
+	public ImageGraphicsContext(Image image, RenderContext context, ResourceManager resourceManager, RuntimeProperties runtimeProperties, BSGraphicsProperties properties) {
 		super();
 		this.image = image;
 		this.context = context;
 		this.resourceManager = resourceManager;
-		this.delegate = new JOGLGraphicsDelegate(this.context, this.resourceManager, canvas);
+		this.delegate = new JOGLGraphicsDelegate(this.context, this.resourceManager, runtimeProperties);
 		view.setSize(image.getWidth(), image.getHeight());
 		view.setCamera(0, 0, 0);
 		this.graphics = new ImageGraphics(image, delegate, this.resourceManager, view);

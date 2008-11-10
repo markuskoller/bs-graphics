@@ -49,7 +49,7 @@ import ch.blackspirit.graphics.WindowListener;
 /**
  * @author Markus Koller
  */
-class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.RealtimeCanvas, GLExecutor {
+class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.RealtimeCanvas, GLExecutor, RuntimeProperties {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 	
 	private static final GLCapabilities CAPABILITIES = new GLCapabilities();
@@ -57,6 +57,9 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		CAPABILITIES.setDepthBits(0);
 		CAPABILITIES.setAlphaBits(8);
 		CAPABILITIES.setDoubleBuffered(true);
+		// FSAA 4x
+//		CAPABILITIES.setSampleBuffers(true);
+//		CAPABILITIES.setNumSamples(4);
 	}
 
 	static GLCapabilities PBUFFER_CAPABILITIES = new GLCapabilities();
@@ -120,6 +123,13 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		setWindow(width, height);
 		
 		initializeGraphics();
+	}
+	
+	public int getScreenLocationX() {
+		return canvas.getLocationOnScreen().x;
+	}
+	public int getScreenLocationY() {
+		return canvas.getLocationOnScreen().y;
 	}
 	
 	private void initializeGraphics() {
@@ -386,12 +396,13 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		setFullscreen(null);
 	}
 	
-	// TODO extend GLCanvas and override paint(Graphics) method to keep Swing/AWT from trigger rendering 
 	public void draw() {
-//		if(frame.isFocused()) {
-		if(frame.isVisible())
-			canvas.display();
-//		}
+		if(frame.isVisible()) canvas.display();
+		if (canvasGLEventListener.getError() != null) {
+			throw canvasGLEventListener.getError();
+		} else if (canvasGLEventListener.getRuntimeException() != null) {
+			throw canvasGLEventListener.getRuntimeException();
+		}
 	}
 	public GraphicsListener getGraphicsListener() {
 		return graphicsListener;

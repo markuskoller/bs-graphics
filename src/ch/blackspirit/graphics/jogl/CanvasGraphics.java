@@ -79,6 +79,8 @@ class CanvasGraphics implements Graphics, ViewListener {
 		// Texturing
 		gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
 		
+//		gl.glEnable(GL.GL_MULTISAMPLE);		
+		
 	    // View
 	    initGLViewPort();
 	    cameraChanged();

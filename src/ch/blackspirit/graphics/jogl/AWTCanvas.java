@@ -40,7 +40,7 @@ import ch.blackspirit.graphics.ResourceManager;
 /**
  * @author Markus Koller
  */
-class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.AWTCanvas, GLExecutor, GLEventListener, ComponentListener {
+class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.AWTCanvas, GLExecutor, GLEventListener, ComponentListener, RuntimeProperties {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 	
 	private static final class UpdateRunnable implements Runnable {

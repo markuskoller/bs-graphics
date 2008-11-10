@@ -26,7 +26,6 @@ import javax.media.opengl.GLContext;
 import javax.vecmath.Color4f;
 import javax.vecmath.Vector2f;
 
-import ch.blackspirit.graphics.Canvas;
 import ch.blackspirit.graphics.DrawingMode;
 import ch.blackspirit.graphics.Flip;
 import ch.blackspirit.graphics.Line;
@@ -59,7 +58,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	
 	private Font font = new Font("SansSerif", Font.PLAIN, 24);
 	
-	private Canvas canvas;
+	private RuntimeProperties properties;
 	
 	// Transformation caches
 	private ObjectPool<Rotation> rotations = new ObjectPool<Rotation>(new Rotation(), 10);
@@ -71,10 +70,10 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	private ArrayList<Transformation> transformations = new ArrayList<Transformation>();
 	private RenderContext drawable;
 	
-	public JOGLGraphicsDelegate(RenderContext context, ResourceManager resourceManager, Canvas canvas) {
+	public JOGLGraphicsDelegate(RenderContext context, ResourceManager resourceManager, RuntimeProperties properties) {
 		this.resourceManager = resourceManager;
 		this.drawable = context;
-		this.canvas = canvas;
+		this.properties = properties;
 	}
 		
 	public void init() {
@@ -484,7 +483,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		applyDrawingMode();
 	}
 	public void applyDrawingMode() {
-		boolean isGlExtBlendSubtractSupported = canvas.getPropertyBoolean(Properties.IS_DRAWING_MODE_SUBTRACT_SUPPORTED);
+		boolean isGlExtBlendSubtractSupported = properties.getPropertyBoolean(Properties.IS_DRAWING_MODE_SUBTRACT_SUPPORTED);
 		GL gl = drawable.getGL();
 		if(drawingMode == DrawingMode.ALPHA_BLEND) {
 			if(isGlExtBlendSubtractSupported) {
@@ -738,7 +737,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		joglImage = (Image)image;
 		startPrimitive(Primitive.TEXTURED_TRIANGLE, joglImage);
 
-		Vector2f tc;			
 		TextureCoords coords = joglImage.texture.getImageTexCoords();
 		
 		if(useColors) {
@@ -746,34 +744,38 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	    	for(int i = 0; i < area.length; i++) {
 				Triangle t = area[i];
 				if(t == null) continue;
+
+				Vector2f tc1 = t.getTextureCoordinate(0);
+				if (tc1 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
+				Vector2f tc2 = t.getTextureCoordinate(1);
+				if (tc2 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
+				Vector2f tc3 = t.getTextureCoordinate(2);
+				if (tc3 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
 		
 				p = t.getPoint(0);
-				tc = t.getTextureCoordinate(0);
 				c = t.getColor(0);
 				if(c == null) c = color;
 				gl.glColor4f(c.x, c.y, c.z, c.w);
-				float texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				float texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y;
+				float texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc1.x;
+				float texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc1.y;
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 				
 		        p = t.getPoint(1);
-				tc = t.getTextureCoordinate(1);
 				c = t.getColor(1);
 				if(c == null) c = color;
 				gl.glColor4f(c.x, c.y, c.z, c.w);
-				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y; 
+				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc2.x;
+				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc2.y; 
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 				
 		        p = t.getPoint(2);
-				tc = t.getTextureCoordinate(2);
 				c = t.getColor(2);
 				if(c == null) c = color;
 				gl.glColor4f(c.x, c.y, c.z, c.w);
-				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y; 
+				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc3.x;
+				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc3.y; 
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 		
@@ -783,24 +785,28 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 				Triangle t = area[i];
 				if(t == null) continue;
 	
+				Vector2f tc1 = t.getTextureCoordinate(0);
+				if (tc1 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
+				Vector2f tc2 = t.getTextureCoordinate(1);
+				if (tc2 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
+				Vector2f tc3 = t.getTextureCoordinate(2);
+				if (tc3 == null) throw new IllegalArgumentException("Texture coordinate for triangle must not be null");
+
 				p = t.getPoint(0);
-				tc = t.getTextureCoordinate(0);
-				float texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				float texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y;
+				float texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc1.x;
+				float texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc1.y;
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 				
 		        p = t.getPoint(1);
-				tc = t.getTextureCoordinate(1);
-				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y; 
+				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc2.x;
+				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc2.y; 
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 				
 		        p = t.getPoint(2);
-				tc = t.getTextureCoordinate(2);
-				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc.x;
-				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc.y; 
+				texX = coords.left() + (coords.right() - coords.left()) / joglImage.texture.getImageWidth() * tc3.x;
+				texY = coords.top() + (coords.bottom() - coords.top()) / joglImage.texture.getImageHeight() * tc3.y; 
 				gl.glTexCoord2f(texX, texY);
 		        gl.glVertex2f(p.x, p.y);
 		

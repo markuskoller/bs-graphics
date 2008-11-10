@@ -15,6 +15,7 @@
  */
 package ch.blackspirit.graphics.jogl;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.media.opengl.GL;
@@ -41,6 +42,9 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 	private boolean firstInitialization = true;
 	
 	private TraceGraphics traceGraphics = new TraceGraphics();
+	
+	private Error error;
+	private RuntimeException runtimeException;
 
 	public CanvasGLEventListener(AbstractGraphicsContext canvas, ch.blackspirit.graphics.jogl.ResourceManager resourceManager, ImageFactory imageFactory, 
 			View view, CanvasGraphics graphics) {
@@ -51,72 +55,113 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 		this.imageFactory = imageFactory;
 	}
 	
+	public Error getError() {
+		return error;
+	}
+	public RuntimeException getRuntimeException() {
+		return runtimeException;
+	}
+	
 	public void listenerInit(GLAutoDrawable drawable) {
-		LOGGER.info("Initializing graphics listener");
-
-		graphics.init();
-		
-		if(canvas.getGraphicsListener() != null) {
-			Graphics userGraphics = graphics;
-			if(isTrace()) {
-				userGraphics = traceGraphics;
-				traceGraphics.setDelegate(graphics);
-				traceGraphics.setLevel(getTraceLevel());
+		try {
+			LOGGER.info("Initializing graphics listener");
+	
+			graphics.init();
+			
+			if(canvas.getGraphicsListener() != null) {
+				Graphics userGraphics = graphics;
+				if(isTrace()) {
+					userGraphics = traceGraphics;
+					traceGraphics.setDelegate(graphics);
+					traceGraphics.setLevel(getTraceLevel());
+				}
+				canvas.getGraphicsListener().init(view, userGraphics);
 			}
-			canvas.getGraphicsListener().init(view, userGraphics);
+			
+			initiated = true;
+		} catch (RuntimeException e) {
+			runtimeException = e;
+			LOGGER.log(Level.SEVERE, "Error during initialisation", e);
+		} catch (Error e) {
+			error = e;
+			LOGGER.log(Level.SEVERE, "Error during initialisation", e);
 		}
-		
-		initiated = true;
-		
 	}
 	public void init(GLAutoDrawable drawable) {
-		debug(drawable);
-		LOGGER.info("Initializing renderer");
-
-		int[] size = new int[1];
-		drawable.getGL().glGetIntegerv(GL.GL_MAX_TEXTURE_SIZE, size, 0);
-		imageFactory.setMaxTextureSize(size[0]);
-
-		applyVSync(drawable);
-		if(!firstInitialization)resourceManager.refreshCache();
-		
-		listenerInit(drawable);
-
-		firstInitialization = false;
+		try {
+			debug(drawable);
+			LOGGER.info("Initializing renderer");
+	
+			int[] size = new int[1];
+			drawable.getGL().glGetIntegerv(GL.GL_MAX_TEXTURE_SIZE, size, 0);
+			imageFactory.setMaxTextureSize(size[0]);
+	
+			applyVSync(drawable);
+			if(!firstInitialization)resourceManager.refreshCache();
+			
+			listenerInit(drawable);
+	
+			firstInitialization = false;
+		} catch (RuntimeException e) {
+			runtimeException = e;
+			LOGGER.log(Level.SEVERE, "Error during initialisation", e);
+		} catch (Error e) {
+			error = e;
+			LOGGER.log(Level.SEVERE, "Error during initialisation", e);
+		}
 	}
 	public void display(GLAutoDrawable drawable) {
-		debug(drawable);
-		canvas.startDrawing();
-		
-		
-		if(!initiated) {
-			listenerInit(drawable);
-		} else {
-			// refresh settings for the case the context is used for image drawing
-			graphics.init();
-		}
-		if(vsyncChanged) applyVSync(drawable);
-		
-		resourceManager.cleanup();
-
-		if(canvas.getGraphicsListener() != null) {
-			Graphics userGraphics = graphics;
-			if(isTrace()) {
-				userGraphics = traceGraphics;
-				traceGraphics.setDelegate(graphics);
-				traceGraphics.setLevel(getTraceLevel());
+		try {
+			debug(drawable);
+			canvas.startDrawing();
+			
+			
+			if(!initiated) {
+				listenerInit(drawable);
+				if (error != null) return;
+				else if (runtimeException != null) return;
+			} else {
+				// refresh settings for the case the context is used for image drawing
+				graphics.init();
 			}
-			canvas.getGraphicsListener().draw(view, userGraphics);
+			if(vsyncChanged) applyVSync(drawable);
+			
+			resourceManager.cleanup();
+	
+			if(canvas.getGraphicsListener() != null) {
+				Graphics userGraphics = graphics;
+				if(isTrace()) {
+					userGraphics = traceGraphics;
+					traceGraphics.setDelegate(graphics);
+					traceGraphics.setLevel(getTraceLevel());
+				}
+				canvas.getGraphicsListener().draw(view, userGraphics);
+			}
+		} catch (RuntimeException e) {
+			runtimeException = e;
+			LOGGER.log(Level.SEVERE, "Error drawing", e);
+		} catch (Error e) {
+			error = e;
+			LOGGER.log(Level.SEVERE, "Error drawing", e);
+		} finally {
+			graphics.endFrame();
+			canvas.endDrawing();
 		}
-		
-		graphics.endFrame();
-		canvas.endDrawing();
 	}
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-		debug(drawable);
-		if(canvas.getGraphicsListener() != null) {
-			canvas.getGraphicsListener().sizeChanged(canvas, view);
+		try {
+			debug(drawable);
+			if(canvas.getGraphicsListener() != null) {
+				canvas.getGraphicsListener().sizeChanged(canvas, view);
+			}
+		} catch (RuntimeException e) {
+			runtimeException = e;
+			LOGGER.log(Level.SEVERE, "Error during size change", e);
+		} catch (Error e) {
+			error = e;
+			LOGGER.log(Level.SEVERE, "Error during size change", e);
 		}
+
 	}
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {}
 

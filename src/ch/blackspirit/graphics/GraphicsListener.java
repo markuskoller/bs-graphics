@@ -27,7 +27,7 @@ public interface GraphicsListener {
 	 * has been set on a graphics context.<br/>
 	 * Also called when the graphics context has lost its settings.
 	 */
-	public void init(View view, Graphics renderer);	
+	public void init(View view, Graphics graphics);	
 	/**
 	 * Do all the drawing here.<br/>
 	 * All settings (including transformations) are kept from the last rendering cycle.<br/>
@@ -36,7 +36,7 @@ public interface GraphicsListener {
 	 * Changes to the view must be done before any drawing.
 	 * There is no specified behaviour for view changes during rendering.
 	 */
-	public void draw(View view, Graphics renderer);
+	public void draw(View view, Graphics graphics);
 	
 	/**
 	 * Notifies that the size of the graphics context changed.

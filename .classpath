@@ -24,7 +24,9 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="BSGraphics/native/win"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jnlp.jar"/>
 	<classpathentry kind="src" output="bin/test" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>

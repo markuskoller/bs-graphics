@@ -20,18 +20,8 @@ package ch.blackspirit.graphics.jogl;
  * enumerated in this class.
  * @author Markus Koller
  */
-public final class Properties {
-
-	/**
-	 * Boolean property
-	 */
-	public static final String IS_DRAWING_MODE_SUBTRACT_SUPPORTED = "ch.blackspirit.graphics.jogl.subtract.supported";
-	/**
-	 * Long property
-	 */
-	public static final String MAX_IMAGE_DRAWING_WIDTH = "ch.blackspirit.graphics.jogl.image.draw.width";
-	/**
-	 * Long property
-	 */
-	public static final String MAX_IMAGE_DRAWING_HEIGHT = "ch.blackspirit.graphics.jogl.image.draw.height";
+public interface RuntimeProperties {
+	public boolean getPropertyBoolean(String property);
+	public long getPropertyLong(String property);
+	public float getPropertyFloat(String property);
 }

@@ -72,12 +72,12 @@ public class ShapeDemo  {
 		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
 
 		// Create a fullscreen realtime canvas using the current display mode.
-		DisplayMode mode = factory.getDisplayMode(WIDTH, HEIGHT);
-		if(mode != null) {
-			canvas = factory.createRealtimeCanvasFullscreen(mode);
-		} else {
+//		DisplayMode mode = factory.getDisplayMode(WIDTH, HEIGHT);
+//		if(mode != null) {
+//			canvas = factory.createRealtimeCanvasFullscreen(mode);
+//		} else {
 			canvas = factory.createRealtimeCanvasFullscreen();
-		}
+//		}
 
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);

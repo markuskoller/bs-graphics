@@ -16,11 +16,17 @@
 package ch.blackspirit.graphics.demo;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.jnlp.FileSaveService;
+import javax.jnlp.ServiceManager;
+import javax.jnlp.UnavailableServiceException;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.vecmath.Color4f;
 
@@ -300,28 +306,42 @@ public class CaptureDemo  {
 				
 				// Convert to BufferedImage
 				BufferedImage awtSave = AWTUtil.readImageBuffer(save);
-				
-				JFileChooser chooser = new JFileChooser();
-				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileFilter(new FileFilter() {
-					@Override
-					public boolean accept(File f) {
-						return f.getName().endsWith(".png");
-					}
-					@Override
-					public String getDescription() {
-						return "Portable Network Graphics (.png)";
-					}
-				});
-				if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-					String fileName = chooser.getSelectedFile().getAbsolutePath();
-					if(!fileName.endsWith(".png")) {
-						fileName = fileName + ".png";
-					}
+
+				try {
+					FileSaveService fss = (FileSaveService)ServiceManager.lookup("javax.jnlp.FileSaveService");
 					
-					// Save using ImageIO
-					ImageIO.write(awtSave, "png", new File(fileName));
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+					ImageIO.write(awtSave, "png", outputStream);
+					ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+					fss.saveFileDialog(null, null, inputStream, "capture.png"); 
+				} catch (UnavailableServiceException e) {
+					JOptionPane.showMessageDialog(null, "FileSaveService not available");
+
+					// Logic for local non webstart test
+					JFileChooser chooser = new JFileChooser();
+					chooser.setMultiSelectionEnabled(false);
+					chooser.setFileFilter(new FileFilter() {
+						@Override
+						public boolean accept(File f) {
+							return f.getName().endsWith(".png");
+						}
+						@Override
+						public String getDescription() {
+							return "Portable Network Graphics (.png)";
+						}
+					});
+					if(chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+						String fileName = chooser.getSelectedFile().getAbsolutePath();
+						if(!fileName.endsWith(".png")) {
+							fileName = fileName + ".png";
+						}
+						
+						// Save using ImageIO
+						ImageIO.write(awtSave, "png", new File(fileName));
+					}
 				}
+				
 				doSave = false;
 			}
 		}
