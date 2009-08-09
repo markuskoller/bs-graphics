@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import javax.media.opengl.GL;
 
-class TraceGL extends javax.media.opengl.TraceGL {
+final class TraceGL extends javax.media.opengl.TraceGL {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 	private StringBuffer printed = new StringBuffer();
 	private Level level;

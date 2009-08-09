@@ -20,7 +20,7 @@ package ch.blackspirit.graphics.jogl;
  * enumerated in this class.
  * @author Markus Koller
  */
-public interface RuntimeProperties {
+interface RuntimeProperties {
 	public boolean getPropertyBoolean(String property);
 	public long getPropertyLong(String property);
 	public float getPropertyFloat(String property);

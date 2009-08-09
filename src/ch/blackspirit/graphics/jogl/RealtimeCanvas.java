@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import ch.blackspirit.graphics.WindowListener;
 /**
  * @author Markus Koller
  */
-class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.RealtimeCanvas, GLExecutor, RuntimeProperties {
+final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.RealtimeCanvas, GLExecutor, RuntimeProperties {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 	
 	private static final GLCapabilities CAPABILITIES = new GLCapabilities();
@@ -68,7 +68,7 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		PBUFFER_CAPABILITIES.setAlphaBits(8);
 	}
 	
-	private BSGraphicsProperties properties = new BSGraphicsProperties();
+	private CanvasProperties properties = new CanvasProperties();
 	
 	private JFrame frame;
 	private String title = "";
@@ -96,9 +96,11 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 	
 	private GLExecutableGLEventListener executableListener = new GLExecutableGLEventListener();
 	
-	private final ArrayList<WindowListener> windowListener = new ArrayList<WindowListener>();
+	private final ArrayList<WindowListener> windowListener = new ArrayList<WindowListener>(100);
 	
-	public RealtimeCanvas(DisplayMode displayMode) {
+	public RealtimeCanvas(DisplayMode displayMode, CanvasProperties properties) {
+		this.properties = properties;
+		
 		// initialize view size and camera
 		if(displayMode == null) {
 			// use current mode to initialize
@@ -115,7 +117,9 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		
 		initializeGraphics();
 	}
-	public RealtimeCanvas(int width, int height) {
+	public RealtimeCanvas(int width, int height, CanvasProperties properties) {
+		this.properties = properties;
+
 		// initialize view size and camera
 		view.setSize(width, height);
 		view.setCamera(0, 0, 0);
@@ -137,12 +141,12 @@ class RealtimeCanvas extends AbstractGraphicsContext implements ch.blackspirit.g
 		canvasGraphics = new CanvasGraphics(delegate, view);
         canvasGLEventListener = new CanvasGLEventListener(this, resourceManager, imageFactory, view, canvasGraphics);
         canvasGLEventListener.setDebugGL(properties.isDebugGL());
-        canvasGLEventListener.setTrace(properties.isTrace());
+        canvasGLEventListener.setTrace(properties.isTraceEnabled());
         canvasGLEventListener.setTraceLevel(properties.getTraceLogLevel());
 		canvasRenderContext.setMainGLEventListener(canvasGLEventListener);
         
         executableListener.setDebugGL(properties.isDebugGL());
-        executableListener.setTrace(properties.isTrace());
+        executableListener.setTrace(properties.isTraceEnabled());
         executableListener.setTraceLevel(properties.getTraceLogLevel());
 
 		SupportGLExecutable supportGLExecutable = new SupportGLExecutable();

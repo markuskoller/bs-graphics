@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,15 @@ public interface Area {
 	/**
 	 * @return The triangles covering the area.
 	 */
-	public abstract Triangle[] getTriangles();
+	public Triangle[] getTriangles();
 	/**
 	 * @return The texture set for texturing the area.
 	 */
-	public abstract Image getTexture();
+	public Image getTexture();
 	/**
 	 * @param texture The texture to use for texturing the area.
 	 */
-	public abstract void setTexture(Image texture);
+	public void setTexture(Image texture);
 	/**
 	 * Fill the area optionally using the colors specified and texturing
 	 * @param graphics The graphics object to use for drawing.

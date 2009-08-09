@@ -22,7 +22,7 @@ import javax.media.opengl.GLEventListener;
 /**
  * @author Markus Koller
  */
-class RenderContext  {
+final class RenderContext  {
 	private GLAutoDrawable drawable;
 	private GLEventListener glEventListener;
 	private GLEventListener mainGlEventListener;

@@ -40,7 +40,7 @@ import com.sun.opengl.util.texture.TextureIO;
 /**
  * @author Markus Koller
  */
-class ResourceManager implements
+final class ResourceManager implements
 		ch.blackspirit.graphics.ResourceManager {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
@@ -259,7 +259,7 @@ class ResourceManager implements
 		if(image.texture == null) {
 			try {
 				if(!cacheImage(image)) {
-					System.out.println("failed");
+//					System.out.println("failed");
 					return;
 				}
 			} catch (IOException e) {
@@ -389,7 +389,7 @@ class ResourceManager implements
 		ResourceManager resourceManager;
 		ch.blackspirit.graphics.jogl.Image image;
 		public void execute(GLDrawable drawable, GL gl) {
-			System.out.println("cache");
+//			System.out.println("cache");
 			resourceManager.updateBufferedCache(image);
 		}
 	}
@@ -401,7 +401,7 @@ class ResourceManager implements
 		int width;
 		int height;
 		public void execute(GLDrawable drawable, GL gl) {
-			System.out.println("cache region");
+//			System.out.println("cache region");
 			resourceManager.updateBufferedCache(image, offsetX, offsetY, width, height);
 		}
 	}

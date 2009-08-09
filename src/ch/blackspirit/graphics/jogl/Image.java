@@ -31,7 +31,7 @@ import com.sun.opengl.util.texture.TextureIO;
 /**
  * @author Markus Koller
  */
-class Image implements ch.blackspirit.graphics.Image {
+final class Image implements ch.blackspirit.graphics.Image {
 	private final int width;
 	private final int height;
 	private final URL url;
@@ -57,7 +57,11 @@ class Image implements ch.blackspirit.graphics.Image {
 		
 		if(buffered) {
 			if(forceAlpha) throw new UnsupportedOperationException("Loading buffered image from url forcing alpha must be manually done using explicit buffer type");
-			textureData = TextureIO.newTextureData(url, false, null);
+			try {
+				textureData = TextureIO.newTextureData(url, false, null);
+			} catch (Throwable t) {
+				throw new RuntimeException("Error loading image: " + url, t);
+			}
 			if(textureData.getPixelFormat() == GL.GL_RGBA) {
 				bufferType = BufferTypes.RGBA_4Byte;
 				this.alpha = true;
@@ -72,7 +76,7 @@ class Image implements ch.blackspirit.graphics.Image {
 			this.byteBuffer = ((ByteBuffer)textureData.getBuffer());
 			this.bytes = byteBuffer.array();
 		} else {
-			// preload data to now image size
+			// preload data to know image size
 			this.textureData = createTextureData();
 			this.alpha = textureData.getPixelFormat() == GL.GL_RGBA; 
 			this.width = textureData.getWidth();
@@ -104,24 +108,32 @@ class Image implements ch.blackspirit.graphics.Image {
 		this.forceAlpha = false;
 		
 		if(bufferType == BufferTypes.RGBA_4Byte) {
-			TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGBA, GL.GL_RGBA, false, null);
-			if(tempData.getPixelFormat() != GL.GL_RGBA) {
-				textureData = convertToRGBA(tempData);
-				tempData.flush();
-			} else {
-				textureData = tempData;
+			try {
+				TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGBA, GL.GL_RGBA, false, null);
+				if(tempData.getPixelFormat() != GL.GL_RGBA) {
+					textureData = convertToRGBA(tempData);
+					tempData.flush();
+				} else {
+					textureData = tempData;
+				}
+				this.alpha = true;
+			} catch (Throwable t) {
+				throw new RuntimeException("Error loading image: " + url, t);
 			}
-			this.alpha = true;
 		} else if(bufferType == BufferTypes.RGB_3Byte) {
-			TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGB, GL.GL_RGB, false, null);
-			if(tempData.getPixelFormat() != GL.GL_RGB) {
-				textureData = convertToRGB(tempData);
-				tempData.flush();
-			} else {
-				textureData = tempData;
+			try {
+				TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGB, GL.GL_RGB, false, null);
+				if(tempData.getPixelFormat() != GL.GL_RGB) {
+					textureData = convertToRGB(tempData);
+					tempData.flush();
+				} else {
+					textureData = tempData;
+				}
+				if(textureData.getPixelFormat() != GL.GL_RGB) throw new RuntimeException("Unexpected pixel format");
+				this.alpha = false;
+			} catch (Throwable t) {
+				throw new RuntimeException("Error loading image: " + url, t);
 			}
-			if(textureData.getPixelFormat() != GL.GL_RGB) throw new RuntimeException("Unexpected pixel format");
-			this.alpha = false;
 		} else {
 			throw new UnsupportedOperationException("Unsupported buffer type");
 		}
@@ -176,16 +188,20 @@ class Image implements ch.blackspirit.graphics.Image {
 		} else {
 			if(url != null) {
 				TextureData data;
-				if(forceAlpha) {
-					TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGBA, GL.GL_RGBA, false, null);
-					if(tempData.getPixelFormat() != GL.GL_RGBA) {
-						data = convertToRGBA(tempData);
-						tempData.flush();
+				try {
+					if(forceAlpha) {
+						TextureData tempData = TextureIO.newTextureData(url, GL.GL_RGBA, GL.GL_RGBA, false, null);
+						if(tempData.getPixelFormat() != GL.GL_RGBA) {
+							data = convertToRGBA(tempData);
+							tempData.flush();
+						} else {
+							data = tempData;
+						}
 					} else {
-						data = tempData;
+						data = TextureIO.newTextureData(url, false, null);
 					}
-				} else {
-					data = TextureIO.newTextureData(url, false, null);
+				} catch (Throwable t) {
+					throw new RuntimeException("Error loading image: " + url, t);
 				}
 				return data;
 			} else {

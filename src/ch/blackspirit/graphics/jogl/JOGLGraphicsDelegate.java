@@ -38,8 +38,15 @@ import com.sun.opengl.util.texture.TextureCoords;
 /**
  * @author Markus Koller
  */
-class JOGLGraphicsDelegate implements GraphicsDelegate {
+final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	private ResourceManager resourceManager;
+
+	private DrawingMode drawingMode = DrawingMode.ALPHA_BLEND;
+
+	private boolean redMask = true;
+	private boolean greenMask = true;
+	private boolean blueMask = true;
+	private boolean alphaMask = true;
 
 	private Color4f clearColor = new Color4f(0f, 0f, 0f, 0f);
 	private Color4f baseColor = new Color4f(1f, 1f, 1f, 1f);
@@ -47,7 +54,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	private Color4f color = new Color4f(1f, 1f, 1f, 1f);
 	
 	private float lineWidth = 1f;
-	private float diameter = 1f;
+	private float pointDiameter = 1f;
 	
 	private float translationX = 0;
 	private float translationY = 0;
@@ -67,7 +74,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	
 	private HashMap<Font, TextRenderer> textRenderers = new HashMap<Font, TextRenderer>();
 	
-	private ArrayList<Transformation> transformations = new ArrayList<Transformation>();
+	private ArrayList<Transformation> transformations = new ArrayList<Transformation>(1000);
 	private RenderContext drawable;
 	
 	public JOGLGraphicsDelegate(RenderContext context, ResourceManager resourceManager, RuntimeProperties properties) {
@@ -94,49 +101,33 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		setTransformation();
 	}
 	
-	private void setTransformation() {
-		endPrimitivesKeepImage();
-		GL gl = drawable.getGL();
-		
-		// Reset
-		gl.glLoadIdentity();
-		
-		// Rotate to correct view
-		gl.glRotatef(180f, 1, 0, 0);
-		gl.glRotatef(angle, 0, 0, 1);
-
-		// Translate to camera
-		gl.glTranslatef(translationX, translationY, 0);
-
-		// Recreate correct transformation
-		for(int i = 0; i < transformations.size(); i++) {
-			transformations.get(i).apply(gl);
-		}
+	// ==================== Accessors ====================
+	public GL getGL() {
+		return drawable.getGL();
 	}
-	private void setTextTransformation() {
-		endPrimitives();
-		GL gl = drawable.getGL();
-		
-		// Reset
-		gl.glLoadIdentity();
-		// Rotate to correct view
-		gl.glRotatef(180f, 1, 0, 0);
-		// Translate to camera
-		gl.glTranslatef(translationX, translationY, 0);
-		
-		// Recreate correct transformation
-		for(int i = 0; i < transformations.size(); i++) {
-			transformations.get(i).apply(gl);
-		}
-		gl.glScalef(1, -1, 1);
+	public GLContext getContext() {
+		return drawable.getDrawable().getContext();
 	}
 
-	
+	// ==================== Clearing ====================
 	public void clear() {
 		endPrimitivesKeepImage();
 		drawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT);
 	}
+	public void getClearColor(Color4f color) {
+		color.set(clearColor);
+	}
+	public void setClearColor(Color4f color) {
+		endPrimitivesKeepImage();
+		if(color.equals(clearColor)) return;
+		clearColor.set(color);
+		applyClearColor();
+	}
+	private void applyClearColor() {
+		drawable.getGL().glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+	}
 	
+	// ==================== Color ====================
 	public void setColor(Color4f color) {
 		// glEnd should not be necessary here, but my FireGL V3200 disagrees!
 		endPrimitivesKeepImage();
@@ -151,44 +142,21 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		gl.glColor4f(color.x, color.y, color.z, color.w);
 	}
 	
-	public void drawLine(float x1, float y1, float x2, float y2) {
-        startPrimitive(Primitive.LINE, null);
-		GL gl = drawable.getGL();
-        gl.glVertex2f(x1, y1);
-        gl.glVertex2f(x2, y2);
-        
-	}
-	public void applyLineWidth() {
-		GL gl = drawable.getGL();
-		gl.glLineWidth(lineWidth);
-	}
-	public void drawPoint(float x, float y) {
-		startPrimitive(Primitive.POINT, null);
-		GL gl = drawable.getGL();
-        gl.glVertex2f(x, y);
-	}
-	public void applyPointSize() {
-		GL gl = drawable.getGL();
-		gl.glPointSize(diameter);
-	}
-
 	public void setBaseColor(Color4f color) {
 		endPrimitivesKeepImage();
 		this.baseColor = color;
 		applyBaseColor();
 	}
-	public void applyBaseColor() {
+	public void getBaseColor(Color4f color) {
+		color.set(baseColor);
+	}
+	private void applyBaseColor() {
 		GL gl = drawable.getGL();
 	    baseColor.get(baseColorArray);
 		gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, baseColorArray, 0);
 	}
-	public void setCamera(float translationX, float translationY, float angle) {
-		this.translationX = translationX;
-		this.translationY = translationY;
-		this.angle = angle;
-		setTransformation();
-	}
-	
+
+	// ==================== Images ====================
 	public void drawImage(ch.blackspirit.graphics.Image image, float width, float height) {
 		this.drawImage(image, width, height, Flip.NONE);
 	}
@@ -197,6 +165,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 
 	public void drawImage(ch.blackspirit.graphics.Image image, float width, float height, Flip flip) {
+		if (image == null) throw new IllegalArgumentException("image must not be null");
 		GL gl = drawable.getGL();
 		
 		if (!(image instanceof Image)) throw new RuntimeException("Image has not been created by the JOGL Blackspirit Graphics implementation!");
@@ -237,6 +206,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 
 	public void drawImage(ch.blackspirit.graphics.Image image, float width, float height, int subImageX, int subImageY, int subImageWidth, int subImageHeight, Flip flip) {
+		if (image == null) throw new IllegalArgumentException("image must not be null");
 		GL gl = drawable.getGL();
 		
 		if (!(image instanceof Image)) throw new RuntimeException("Image has not been created by the JOGL Blackspirit Graphics implementation!");
@@ -261,7 +231,6 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 			texRight = temp;
 		}
 
-        
 		gl.glTexCoord2f(texLeft, texTop);
         gl.glVertex2f(0, 0);
 
@@ -276,285 +245,45 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 
 	}
 	
-	public void fillTriangle(float x1, float y1, float x2, float y2, float x3, float y3) {
-        startPrimitive(Primitive.TRIANGLE, null);
+	// ==================== Points ====================
+	public void drawPoint(float x, float y) {
+		startPrimitive(Primitive.POINT, null);
 		GL gl = drawable.getGL();
-        gl.glVertex2f(x1, y1);
-        gl.glVertex2f(x3, y3);
-        gl.glVertex2f(x2, y2);
+        gl.glVertex2f(x, y);
 	}
-	
-	public void endFrame() {
-		endPrimitives();	
-		clearTransformation();
-	}
-	
-	public void endPrimitivesKeepImage() {
-		startPrimitive(null, drawable.getLastImage());
-	}
-	public void endPrimitives() {
-		startPrimitive(null, null);
-	}
-	
-	private boolean ended = true;
-	private void startPrimitive(Primitive primitive, Image image) {
-		// end last primitive if necessary
-		if(drawable.getLastPrimitive() != null) {
-			// LINES AND POINTS NOT CURRENTLY OPTIMIZED
-			if(primitive != drawable.getLastPrimitive() || 
-					primitive == Primitive.LINE || primitive == Primitive.POINT || primitive == Primitive.TEXTURED_TRIANGLE) {
-				drawable.getGL().glEnd();
-				ended = true;
-			} 
-		}
-		// handle image binding and target enabling/disabling 
-		if(image != drawable.getLastImage()) {
-			if(image != null && image.texture == null) {
-				try {
-					resourceManager.cache(image);
-				} catch (IOException e) {
-					throw new RuntimeException("Error caching image. Do manual caching to prevent such errors during rendering.", e);
-				}
-			}
-			if(drawable.getLastImage() != null && image != null) {
-				if(drawable.getLastImage().texture.getTarget() != image.texture.getTarget()) {
-					drawable.getLastImage().texture.disable();
-					image.texture.enable();
-				}
-			} else {
-				if(drawable.getLastImage() != null) { 
-					drawable.getLastImage().texture.disable();
-				}
-				if(image != null) {
-					image.texture.enable();
-				}
-			}
-			if(image != null) {
-				image.texture.bind();
-			}
-		}
-		// start new primitive if necessary
-		if(primitive != null && ended) {
-			GL gl = drawable.getGL();
-			if(primitive == Primitive.POINT) {
-				gl.glBegin(GL.GL_POINTS);
-			}
-			if(primitive == Primitive.LINE) {
-				gl.glBegin(GL.GL_LINES);
-			}
-			if(primitive == Primitive.TRIANGLE || primitive == Primitive.TEXTURED_TRIANGLE) {
-				gl.glBegin(GL.GL_TRIANGLES);
-			}
-			if(primitive == Primitive.IMAGE) {
-				gl.glBegin(GL.GL_QUADS);
-			}
-			
-			ended = false;
-		}
-		drawable.setLastImage(image);
-		drawable.setLastPrimitive(primitive);
-	}
-
-	public void getBaseColor(Color4f color) {
-		color.set(baseColor);
-	}
-
-	public void rotate(float angle) {
-		endPrimitivesKeepImage();
-		Rotation rotation = rotations.get();
-		rotation.setAngle(angle);
-		transformations.add(rotation);
-		rotation.apply(drawable.getGL());
-	}
-	public void translate(float x, float y) {
-		endPrimitivesKeepImage();
-		Translation translation = translations.get();
-		translation.setTranslateX(-x);
-		translation.setTranslateY(-y);
-		transformations.add(translation);
-		translation.apply(drawable.getGL());
-	}
-	public void scale(float x, float y) {
-		endPrimitivesKeepImage();
-		Scale scale = scales.get();
-		scale.setScaleX(x);
-		scale.setScaleY(y);
-		transformations.add(scale);
-		scale.apply(drawable.getGL());
-	}
-	public void clearTransformation() {
-		for(int i = 0; i < transformations.size(); i++) {
-			Transformation t = transformations.get(i);
-			if(t instanceof Rotation) rotations.free((Rotation)t);
-			else if(t instanceof Translation) translations.free((Translation)t);
-			else if(t instanceof Scale) scales.free((Scale)t);
-		}
-		transformations.clear();
-		setTransformation();
-	}
-
-
-	public GL getGL() {
-		return drawable.getGL();
-	}
-
-	public void drawText(String text) {
-		endPrimitives();
-		TextRenderer textRenderer = resourceManager.getTextRenderer(font);
-		textRenderer.begin3DRendering();
-		applyColor();
-		setTextTransformation();
-		textRenderer.draw(text, 0, 0);
-		textRenderer.end3DRendering();
-		setTransformation();
-	}
-	public void getTextBounds(String text, Rectangle2D bounds) {
-		resourceManager.getTextRenderer(font).getBounds(text);
-	}
-
-	private boolean redMask = true;
-	private boolean greenMask = true;
-	private boolean blueMask = true;
-	private boolean alphaMask = true;
-	public boolean getRedMask() {
-		return redMask;
-	}
-	public void setRedMask(boolean red) {
-		endPrimitivesKeepImage();
-		this.redMask = red;
-		applyColorMask();
-	}
-	public boolean getGreenMask() {
-		return greenMask;
-	}
-	public void setGreenMask(boolean green) {
-		endPrimitivesKeepImage();
-		this.greenMask = green;
-		applyColorMask();
-	}
-	public boolean getBlueMask() {
-		return blueMask;
-	}
-	public void setBlueMask(boolean blue) {
-		endPrimitivesKeepImage();
-		this.blueMask = blue;
-		applyColorMask();
-	}
-	public boolean getAlphaMask() {
-		return alphaMask;
-	}
-	public void setAlphaMask(boolean alpha) {
-		endPrimitivesKeepImage();
-		this.alphaMask = alpha;
-		applyColorMask();
-	}
-	public void setColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
-		endPrimitivesKeepImage();
-		this.redMask = red;
-		this.greenMask = green;
-		this.blueMask = blue;
-		this.alphaMask = alpha;
-		applyColorMask();
-	}
-	public void applyColorMask() {
-		drawable.getGL().glColorMask(redMask, greenMask, blueMask, alphaMask);
-	}
-
-	public void getClearColor(Color4f color) {
-		color.set(clearColor);
-	}
-	public void setClearColor(Color4f color) {
-		endPrimitivesKeepImage();
-		if(color.equals(clearColor)) return;
-		clearColor.set(color);
-		applyClearColor();
-	}
-	private void applyClearColor() {
-		drawable.getGL().glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-	}
-
-	private DrawingMode drawingMode = DrawingMode.ALPHA_BLEND;
-	public DrawingMode getDrawingMode() {
-		return this.drawingMode;
-	}
-	public void setDrawingMode(DrawingMode drawingMode) {
-		endPrimitivesKeepImage();
-		this.drawingMode = drawingMode; 
-		applyDrawingMode();
-	}
-	public void applyDrawingMode() {
-		boolean isGlExtBlendSubtractSupported = properties.getPropertyBoolean(Properties.IS_DRAWING_MODE_SUBTRACT_SUPPORTED);
+	private void applyPointSize() {
 		GL gl = drawable.getGL();
-		if(drawingMode == DrawingMode.ALPHA_BLEND) {
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_ADD);
-			}
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		} else if(drawingMode == DrawingMode.ADD) {
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_ADD);
-			}
-			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE);
-		} else if(drawingMode == DrawingMode.ALPHA_ADD) {
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_ADD);
-			}
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-		} else if(drawingMode == DrawingMode.MULTIPLY) {
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_ADD);
-			}
-			gl.glBlendFunc(GL.GL_DST_COLOR, GL.GL_ZERO);
-		} else if(drawingMode == DrawingMode.OVERWRITE) {
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_ADD);
-			}
-			gl.glBlendFunc(GL.GL_ONE, GL.GL_ZERO);
-		} else if(drawingMode == DrawingMode.SUBTRACT) {
-			// This uses an extension!!
-			if(isGlExtBlendSubtractSupported) {
-				gl.glBlendEquation(GL.GL_FUNC_REVERSE_SUBTRACT);
-			} else {
-				throw new UnsupportedOperationException("Subtract drawing mode is not supported.");
-			}
-			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE);
-		}
-	} 
-	
-	public Font getFont() {
-		return font;
-	}
-	public void setFont(Font font) {
-		this.font = font;
-	}
-
-	public float getLineWidth() {
-		return lineWidth;
-	}
-	public void setLineWidth(float width) {
-		endPrimitivesKeepImage();
-		lineWidth = width;
-		applyLineWidth();
+		gl.glPointSize(pointDiameter);
 	}
 	public float getPointRadius() {
-		return diameter / 2f;
+		return pointDiameter / 2f;
 	}
 	public void setPointRadius(float radius) {
 		endPrimitivesKeepImage();
-		this.diameter = radius * 2f;
+		this.pointDiameter = radius * 2f;
 		applyPointSize();
 	}
 
-	public GLContext getContext() {
-		return drawable.getDrawable().getContext();
+	// ==================== Lines ====================
+	public void drawLine(float x1, float y1, float x2, float y2) {
+        startPrimitive(Primitive.LINE, null);
+		GL gl = drawable.getGL();
+        gl.glVertex2f(x1, y1);
+        gl.glVertex2f(x2, y2);
+        
 	}
-
+	private void applyLineWidth() {
+		GL gl = drawable.getGL();
+		gl.glLineWidth(lineWidth);
+	}
 	private Line[] lineArray = new Line[1];
 	public void drawLine(Line line, boolean useColors) {
+		if (line == null) throw new IllegalArgumentException("line must not be null");
 		lineArray[0] = line;
 		drawLines(lineArray, useColors);
 	}
 	public void drawLines(Line[] lines, boolean useColor) {
+		if (lines == null) throw new IllegalArgumentException("lines must not be null");
 	    startPrimitive(Primitive.LINE, null);
 		GL gl = drawable.getGL();
 		Vector2f p;
@@ -591,13 +320,32 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 			}
 		}
 	}
-
+	public float getLineWidth() {
+		return lineWidth;
+	}
+	public void setLineWidth(float width) {
+		endPrimitivesKeepImage();
+		lineWidth = width;
+		applyLineWidth();
+	}
+	
+	// ==================== Triangles ====================
+	public void fillTriangle(float x1, float y1, float x2, float y2, float x3, float y3) {
+        startPrimitive(Primitive.TRIANGLE, null);
+		GL gl = drawable.getGL();
+        gl.glVertex2f(x1, y1);
+        gl.glVertex2f(x3, y3);
+        gl.glVertex2f(x2, y2);
+	}
+	
 	private Triangle[] triangleArray = new Triangle[1];
 	public void drawTriangle(Triangle triangle, boolean useColors) {
+		if (triangle == null) throw new IllegalArgumentException("triangle must not be null");
 		triangleArray[0] = triangle;
 		drawTriangles(triangleArray, useColors);
 	}
 	public void drawTriangles(Triangle[] triangles, boolean useColors) {
+		if (triangles == null) throw new IllegalArgumentException("triangles must not be null");
 	    startPrimitive(Primitive.LINE, null);
 		GL gl = drawable.getGL();
 		Vector2f p;
@@ -672,6 +420,7 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 
 	public void fillTriangles(Triangle[] triangles, boolean useColors) {
+		if (triangles == null) throw new IllegalArgumentException("triangles must not be null");
 		GL gl = drawable.getGL();
 
 		Vector2f p;
@@ -718,17 +467,21 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		}
 	}
 	public void fillTriangle(Triangle triangle, boolean useColors) {
+		if (triangle == null) throw new IllegalArgumentException("triangle must not be null");
 		triangleArray[0] = triangle;
 		fillTriangles(triangleArray, useColors);
 	}
 	public void fillTriangle(Triangle triangle, boolean useColors, ch.blackspirit.graphics.Image image) {
+		if (triangle == null) throw new IllegalArgumentException("triangle must not be null");
 		triangleArray[0] = triangle;
 		fillTriangles(triangleArray, useColors, image);
 	}
 	
 	// TODO make faster using glDrawArrays (arrays of 100 triangles?) => much less native calls (http://www.opengl.org/sdk/docs/man/)
 	// TODO texture width, height calls only once
-	public void fillTriangles(Triangle[] area, boolean useColors, ch.blackspirit.graphics.Image image) {
+	public void fillTriangles(Triangle[] triangles, boolean useColors, ch.blackspirit.graphics.Image image) {
+		if (triangles == null) throw new IllegalArgumentException("triangles must not be null");
+		if (image == null) throw new IllegalArgumentException("image must not be null");
 		GL gl = drawable.getGL();
 
 		Vector2f p;
@@ -741,8 +494,8 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		
 		if(useColors) {
 			Color4f c;
-	    	for(int i = 0; i < area.length; i++) {
-				Triangle t = area[i];
+	    	for(int i = 0; i < triangles.length; i++) {
+				Triangle t = triangles[i];
 				if(t == null) continue;
 
 				Vector2f tc1 = t.getTextureCoordinate(0);
@@ -781,8 +534,8 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		
 	    	}
 		} else {
-	    	for(int i = 0; i < area.length; i++) {
-				Triangle t = area[i];
+	    	for(int i = 0; i < triangles.length; i++) {
+				Triangle t = triangles[i];
 				if(t == null) continue;
 	
 				Vector2f tc1 = t.getTextureCoordinate(0);
@@ -814,43 +567,32 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 		}
 	}
 
-//	public void setPolygonAntialiasing(boolean enabled) {
-//		polygonAntialiasing = enabled;
-//		applyPolygonAntialiasing();
-//	}
-	public boolean getPolygonAntialiasing() {
-		return false;//polygonAntialiasing;
+	// ==================== Text ====================
+	public void drawText(String text) {
+		if (text == null) throw new IllegalArgumentException("text must not be null");
+		endPrimitives();
+		TextRenderer textRenderer = resourceManager.getTextRenderer(font);
+		textRenderer.begin3DRendering();
+		applyColor();
+		setTextTransformation();
+		textRenderer.draw(text, 0, 0);
+		textRenderer.end3DRendering();
+		setTransformation();
 	}
-	private void applyPolygonAntialiasing() {
-		GL gl = drawable.getGL();
-		// !! Enabling this causes problems on most GFX Cards (though not on my FireGL)
-		gl.glDisable(GL.GL_POLYGON_SMOOTH);
-		gl.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST);
-	}
-	private void applyPointAntialiasing() {
-		GL gl = drawable.getGL();
-		gl.glEnable(GL.GL_POINT_SMOOTH);
-		gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
+	public void getTextBounds(String text, Rectangle2D bounds) {
+		if (text == null) throw new IllegalArgumentException("text must not be null");
+		if (bounds == null) throw new IllegalArgumentException("bounds must not be null");
+		resourceManager.getTextRenderer(font).getBounds(text);
 	}
 	
-	public void setLineAntialiasing(boolean enabled) {
-		endPrimitivesKeepImage();
-		lineAntialiasing = enabled;
-		applyLineAntialiasing();
+	public Font getFont() {
+		return font;
 	}
-	public boolean getLineAntialiasing() {
-		return lineAntialiasing;
+	public void setFont(Font font) {
+		this.font = font;
 	}
-	private void applyLineAntialiasing() {
-		GL gl = drawable.getGL();
-		if(lineAntialiasing) {
-			gl.glEnable(GL.GL_LINE_SMOOTH);
-		} else {
-			gl.glDisable(GL.GL_LINE_SMOOTH);
-		}
-		gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
-	}
-
+	
+	// ==================== Buffer content copying ====================
 	public void copyToImage(ch.blackspirit.graphics.Image image) {
 		Image joglImage = (Image)image;
 		startPrimitive(null, joglImage);
@@ -888,4 +630,283 @@ class JOGLGraphicsDelegate implements GraphicsDelegate {
 				joglImage.texture.getTarget(), 0, 
 				0, image.getHeight() - y, x, cheight - height - y, width, height);
 	}
+	
+	// ==================== Transformation ====================
+	public void setCamera(float translationX, float translationY, float angle) {
+		this.translationX = translationX;
+		this.translationY = translationY;
+		this.angle = angle;
+		setTransformation();
+	}
+
+	public void rotate(float angle) {
+		endPrimitivesKeepImage();
+		Rotation rotation = rotations.get();
+		rotation.setAngle(angle);
+		transformations.add(rotation);
+		rotation.apply(drawable.getGL());
+	}
+	public void translate(float x, float y) {
+		endPrimitivesKeepImage();
+		Translation translation = translations.get();
+		translation.setTranslateX(-x);
+		translation.setTranslateY(-y);
+		transformations.add(translation);
+		translation.apply(drawable.getGL());
+	}
+	public void scale(float x, float y) {
+		endPrimitivesKeepImage();
+		Scale scale = scales.get();
+		scale.setScaleX(x);
+		scale.setScaleY(y);
+		transformations.add(scale);
+		scale.apply(drawable.getGL());
+	}
+	public void clearTransformation() {
+		for(int i = 0; i < transformations.size(); i++) {
+			Transformation t = transformations.get(i);
+			if(t instanceof Rotation) rotations.free((Rotation)t);
+			else if(t instanceof Translation) translations.free((Translation)t);
+			else if(t instanceof Scale) scales.free((Scale)t);
+		}
+		transformations.clear();
+		setTransformation();
+	}
+	
+	private void setTransformation() {
+		endPrimitivesKeepImage();
+		GL gl = drawable.getGL();
+		
+		// Reset
+		gl.glLoadIdentity();
+		
+		// Rotate to correct view
+		gl.glRotatef(180f, 1, 0, 0);
+		gl.glRotatef(angle, 0, 0, 1);
+
+		// Translate to camera
+		gl.glTranslatef(translationX, translationY, 0);
+
+		// Recreate correct transformation
+		for(int i = 0; i < transformations.size(); i++) {
+			transformations.get(i).apply(gl);
+		}
+	}
+	private void setTextTransformation() {
+		endPrimitives();
+		GL gl = drawable.getGL();
+		
+		// Reset
+		gl.glLoadIdentity();
+		// Rotate to correct view
+		gl.glRotatef(180f, 1, 0, 0);
+		// Translate to camera
+		gl.glTranslatef(translationX, translationY, 0);
+		
+		// Recreate correct transformation
+		for(int i = 0; i < transformations.size(); i++) {
+			transformations.get(i).apply(gl);
+		}
+		gl.glScalef(1, -1, 1);
+	}
+
+	// ==================== Drawing Settings ====================
+	public boolean getRedMask() {
+		return redMask;
+	}
+	public void setRedMask(boolean red) {
+		endPrimitivesKeepImage();
+		this.redMask = red;
+		applyColorMask();
+	}
+	public boolean getGreenMask() {
+		return greenMask;
+	}
+	public void setGreenMask(boolean green) {
+		endPrimitivesKeepImage();
+		this.greenMask = green;
+		applyColorMask();
+	}
+	public boolean getBlueMask() {
+		return blueMask;
+	}
+	public void setBlueMask(boolean blue) {
+		endPrimitivesKeepImage();
+		this.blueMask = blue;
+		applyColorMask();
+	}
+	public boolean getAlphaMask() {
+		return alphaMask;
+	}
+	public void setAlphaMask(boolean alpha) {
+		endPrimitivesKeepImage();
+		this.alphaMask = alpha;
+		applyColorMask();
+	}
+	public void setColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+		endPrimitivesKeepImage();
+		this.redMask = red;
+		this.greenMask = green;
+		this.blueMask = blue;
+		this.alphaMask = alpha;
+		applyColorMask();
+	}
+	public void applyColorMask() {
+		drawable.getGL().glColorMask(redMask, greenMask, blueMask, alphaMask);
+	}
+
+	public DrawingMode getDrawingMode() {
+		return this.drawingMode;
+	}
+	public void setDrawingMode(DrawingMode drawingMode) {
+		endPrimitivesKeepImage();
+		this.drawingMode = drawingMode; 
+		applyDrawingMode();
+	}
+	public void applyDrawingMode() {
+		boolean isGlExtBlendSubtractSupported = properties.getPropertyBoolean(Properties.IS_DRAWING_MODE_SUBTRACT_SUPPORTED);
+		GL gl = drawable.getGL();
+		if(drawingMode == DrawingMode.ALPHA_BLEND) {
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_ADD);
+			}
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		} else if(drawingMode == DrawingMode.ADD) {
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_ADD);
+			}
+			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE);
+		} else if(drawingMode == DrawingMode.ALPHA_ADD) {
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_ADD);
+			}
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+		} else if(drawingMode == DrawingMode.MULTIPLY) {
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_ADD);
+			}
+			gl.glBlendFunc(GL.GL_DST_COLOR, GL.GL_ZERO);
+		} else if(drawingMode == DrawingMode.OVERWRITE) {
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_ADD);
+			}
+			gl.glBlendFunc(GL.GL_ONE, GL.GL_ZERO);
+		} else if(drawingMode == DrawingMode.SUBTRACT) {
+			// This uses an extension!!
+			if(isGlExtBlendSubtractSupported) {
+				gl.glBlendEquation(GL.GL_FUNC_REVERSE_SUBTRACT);
+			} else {
+				throw new UnsupportedOperationException("Subtract drawing mode is not supported.");
+			}
+			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE);
+		}
+	} 
+	
+	//	public void setPolygonAntialiasing(boolean enabled) {
+	//	polygonAntialiasing = enabled;
+	//	applyPolygonAntialiasing();
+	//}
+	public boolean getPolygonAntialiasing() {
+		return false;//polygonAntialiasing;
+	}
+	private void applyPolygonAntialiasing() {
+		GL gl = drawable.getGL();
+		// !! Enabling this causes problems on most GFX Cards (though not on my FireGL)
+		gl.glDisable(GL.GL_POLYGON_SMOOTH);
+		gl.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST);
+	}
+	private void applyPointAntialiasing() {
+		GL gl = drawable.getGL();
+		gl.glEnable(GL.GL_POINT_SMOOTH);
+		gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
+	}
+	
+	public void setLineAntialiasing(boolean enabled) {
+		endPrimitivesKeepImage();
+		lineAntialiasing = enabled;
+		applyLineAntialiasing();
+	}
+	public boolean getLineAntialiasing() {
+		return lineAntialiasing;
+	}
+	private void applyLineAntialiasing() {
+		GL gl = drawable.getGL();
+		if(lineAntialiasing) {
+			gl.glEnable(GL.GL_LINE_SMOOTH);
+		} else {
+			gl.glDisable(GL.GL_LINE_SMOOTH);
+		}
+		gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+}
+	
+	// ==================== Drawing State ====================
+	public void endFrame() {
+		endPrimitives();	
+		clearTransformation();
+	}
+	public void endPrimitivesKeepImage() {
+		startPrimitive(null, drawable.getLastImage());
+	}
+	public void endPrimitives() {
+		startPrimitive(null, null);
+	}
+	private boolean ended = true;
+	private void startPrimitive(Primitive primitive, Image image) {
+		// end last primitive if necessary
+		if(drawable.getLastPrimitive() != null) {
+			// LINES AND POINTS NOT CURRENTLY OPTIMIZED
+			if(primitive != drawable.getLastPrimitive() || 
+					primitive == Primitive.LINE || primitive == Primitive.POINT || primitive == Primitive.TEXTURED_TRIANGLE) {
+				drawable.getGL().glEnd();
+				ended = true;
+			} 
+		}
+		// handle image binding and target enabling/disabling 
+		if(image != drawable.getLastImage()) {
+			if(image != null && image.texture == null) {
+				try {
+					resourceManager.cache(image);
+				} catch (IOException e) {
+					throw new RuntimeException("Error caching image. Do manual caching to prevent such errors during rendering.", e);
+				}
+			}
+			if(drawable.getLastImage() != null && image != null) {
+				if(drawable.getLastImage().texture.getTarget() != image.texture.getTarget()) {
+					drawable.getLastImage().texture.disable();
+					image.texture.enable();
+				}
+			} else {
+				if(drawable.getLastImage() != null) { 
+					drawable.getLastImage().texture.disable();
+				}
+				if(image != null) {
+					image.texture.enable();
+				}
+			}
+			if(image != null) {
+				image.texture.bind();
+			}
+		}
+		// start new primitive if necessary
+		if(primitive != null && ended) {
+			GL gl = drawable.getGL();
+			if(primitive == Primitive.POINT) {
+				gl.glBegin(GL.GL_POINTS);
+			}
+			if(primitive == Primitive.LINE) {
+				gl.glBegin(GL.GL_LINES);
+			}
+			if(primitive == Primitive.TRIANGLE || primitive == Primitive.TEXTURED_TRIANGLE) {
+				gl.glBegin(GL.GL_TRIANGLES);
+			}
+			if(primitive == Primitive.IMAGE) {
+				gl.glBegin(GL.GL_QUADS);
+			}
+			
+			ended = false;
+		}
+		drawable.setLastImage(image);
+		drawable.setLastPrimitive(primitive);
+	}
+
 }

@@ -26,7 +26,7 @@ import com.sun.opengl.util.texture.TextureCoords;
 /**
  * @author Markus Koller
  */
-class BufferRegionUpdate implements GLExecutable {
+final class BufferRegionUpdate implements GLExecutable {
 	public Image image;
 	public int x;
 	public int y;

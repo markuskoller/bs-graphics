@@ -20,7 +20,7 @@ import javax.media.opengl.GL;
 /**
  * @author Markus Koller
  */
-public class Scale implements Transformation {
+public final class Scale implements Transformation {
 	private float scaleX = 1;
 	private float scaleY = 1;
 	

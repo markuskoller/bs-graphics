@@ -20,7 +20,7 @@ import javax.media.opengl.GL;
 /**
  * @author Markus Koller
  */
-public class Translation implements Transformation {
+public final class Translation implements Transformation {
 	private float translateX;
 	private float translateY;
 	

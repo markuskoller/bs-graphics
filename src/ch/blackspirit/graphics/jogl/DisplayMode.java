@@ -18,7 +18,7 @@ package ch.blackspirit.graphics.jogl;
 /**
  * @author Markus Koller
  */
-class DisplayMode implements ch.blackspirit.graphics.DisplayMode {
+final class DisplayMode implements ch.blackspirit.graphics.DisplayMode {
 	private final int colorDepth;
 	private final int width;
 	private final int height;
@@ -72,5 +72,9 @@ class DisplayMode implements ch.blackspirit.graphics.DisplayMode {
 	
 	public int getRefreshRate() {
 		return refreshRate;
+	}
+	
+	public String toString() {
+		return "[" + width + "x" + height + ", " + colorDepth + "bit, " + refreshRate + "fps]";
 	}
 }

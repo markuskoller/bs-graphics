@@ -21,7 +21,7 @@ import javax.media.opengl.GLDrawable;
 /**
  * @author Markus Koller
  */
-class SupportGLExecutable implements GLExecutable {
+final class SupportGLExecutable implements GLExecutable {
 	public boolean isGlExtBlendSubtractSupported = true;
 	public void execute(GLDrawable drawable, GL gl) {
 		try {

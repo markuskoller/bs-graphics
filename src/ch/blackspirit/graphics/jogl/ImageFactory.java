@@ -25,7 +25,7 @@ import ch.blackspirit.graphics.Image;
 /*
  * @author Markus Koller
  */
-class ImageFactory implements ch.blackspirit.graphics.ImageFactory {
+final class ImageFactory implements ch.blackspirit.graphics.ImageFactory {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
 	private int maxSize = Integer.MAX_VALUE;

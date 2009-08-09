@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import ch.blackspirit.graphics.Image;
 import ch.blackspirit.graphics.jogl.BufferTypes;
 
 /**
- * The image converter helps converting Blackspirit Graphics images to AWT images.
- * Thus allowing the user to easily save images using the <code>ImageIO</code> class.
+ * The AWTUtil helps converting buffered Blackspirit Graphics images to AWT images, 
+ * thus allowing the user to easily save images using the <code>ImageIO</code> class.
  * @author Markus Koller
  */
 public class AWTUtil {

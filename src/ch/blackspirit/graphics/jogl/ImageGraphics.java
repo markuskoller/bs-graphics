@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import ch.blackspirit.graphics.Triangle;
 /**
  * @author Markus Koller
  */
-class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListener {
+final class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListener {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
 	private final GraphicsDelegate delegate;
@@ -152,74 +152,6 @@ class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListener {
 		delegate.setColor(color);
 	}
 
-//	public GraphicsContext getGraphics(Image image) {
-//		if (!(image instanceof ch.blackspirit.graphics.jogl.Image)) throw new RuntimeException("Image has not been created by the JOGL Blackspirit Graphics implementation!");
-//		ch.blackspirit.graphics.jogl.Image joglImage = (ch.blackspirit.graphics.jogl.Image)image;
-//	
-//		GLCapabilities PBUFFER_CAPABILITIES = new GLCapabilities();
-//		PBUFFER_CAPABILITIES.setDoubleBuffered(false);
-//		PBUFFER_CAPABILITIES.setAlphaBits(8);
-////			PBUFFER_CAPABILITIES.setPbufferRenderToTexture(true);
-////			PBUFFER_CAPABILITIES.setPbufferRenderToTextureRectangle(true);
-//		
-//		GLPbuffer buffer = GLDrawableFactory.getFactory().createGLPbuffer(PBUFFER_CAPABILITIES, null, 512, 512, context.getContext());
-////		RenderContext rc = new PBufferRenderContext(buffer);
-//		RenderContext rc = new JOGLRenderContext(buffer);
-//		RenderContext.makeCurrent(rc);
-//		GL gl = rc.getGL();
-//		
-//		gl.glDisable(GL.GL_DEPTH_TEST);
-//		
-//		// Background Color
-//	    gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//	    gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
-//	    
-//	    // Lighting, Coloring
-//	    gl.glEnable(GL.GL_LIGHTING);
-//		gl.glEnable(GL.GL_BLEND);
-//	    gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-//	    gl.glEnable(GL.GL_COLOR_MATERIAL);
-//	    gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE);
-//	    gl.glShadeModel(GL.GL_SMOOTH);
-//
-//	    // Anti-Aliasing
-//	    gl.glEnable(GL.GL_POINT_SMOOTH);
-//		gl.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST);
-//		gl.glEnable(GL.GL_LINE_SMOOTH);
-//		gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
-//		gl.glEnable(GL.GL_POLYGON_SMOOTH);
-//		gl.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST);
-//	    
-//		// Texturing
-//		gl.glEnable(GL.GL_TEXTURE_2D);
-////			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
-////			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
-//		gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE);
-//	    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-//	    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-//	    gl.glDisable(GL.GL_TEXTURE_2D);
-////			gl.glEnable(GL.GL_CULL_FACE);
-////			gl.glFrontFace(GL.GL_CW);
-//		
-//	    // View
-//	    gl.glMatrixMode(GL.GL_PROJECTION);
-//	    gl.glLoadIdentity();
-//	    GLU glu = new GLU();
-//	    // logcal resolution must be pbuffer size!
-//	    glu.gluOrtho2D(0, 512, 0, 512);
-//	    gl.glMatrixMode(GL.GL_MODELVIEW);
-//	    
-//		gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, new float[] {1,1,1,1}, 0);
-//
-////			!!! Not implemented !!!
-////			buffer.setSize(width, height);
-////		ImageGraphics2 ig = new ImageGraphics2(joglImage, buffer, rc, imageManager);
-//		ImageGraphics ig = new ImageGraphics(joglImage, new JOGLRendererDelegate(imageManager, rc));
-////		buffer.addGLEventListener(ig);
-//		RenderContext.makeCurrent(context);
-//		return ig;
-//	}
-	
 	public void rotate(float angle) {
 		delegate.rotate(angle);
 	}

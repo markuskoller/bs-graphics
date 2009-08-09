@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 /**
  * @author Markus Koller
  */
-class View implements ch.blackspirit.graphics.View {
+final class View implements ch.blackspirit.graphics.View {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
 	private float width;
@@ -30,7 +30,7 @@ class View implements ch.blackspirit.graphics.View {
 	private float cameraX;
 	private float cameraY;
 	private float cameraAngle;
-	private ArrayList<ViewListener> viewListeners = new ArrayList<ViewListener>();
+	private ArrayList<ViewListener> viewListeners = new ArrayList<ViewListener>(10);
 	
 	public View() {
 		super();

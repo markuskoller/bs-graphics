@@ -18,6 +18,7 @@ package ch.blackspirit.graphics.jogl;
 import javax.media.opengl.GLAutoDrawable;
 
 /**
+ * {@code GLEventListener} for execution of {@link GLExecutable}s.
  * @author Markus Koller
  */
 final class GLExecutableGLEventListener extends AbstractGLEventListener {

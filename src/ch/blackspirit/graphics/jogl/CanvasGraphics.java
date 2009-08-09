@@ -34,7 +34,7 @@ import ch.blackspirit.graphics.Triangle;
 /**
  * @author Markus Koller
  */
-class CanvasGraphics implements Graphics, ViewListener {
+final class CanvasGraphics implements Graphics, ViewListener {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
 	private final GraphicsDelegate delegate;

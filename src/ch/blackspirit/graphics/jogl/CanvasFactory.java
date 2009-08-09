@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@ package ch.blackspirit.graphics.jogl;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.sun.opengl.util.texture.TextureIO;
 
 import ch.blackspirit.graphics.AWTCanvas;
 import ch.blackspirit.graphics.DisplayMode;
@@ -28,34 +31,43 @@ import ch.blackspirit.graphics.RealtimeCanvas;
  * The canvas factory for the Blackspirit Graphics JOGL implementation.
  * @author Markus Koller
  */
-public class CanvasFactory implements ch.blackspirit.graphics.CanvasFactory {
-	/* (non-Javadoc)
-	 * @see ch.blackspirit.graphics.CanvasFactory#createAWTCanvas(java.awt.Container, ch.blackspirit.graphics.GraphicsListener, boolean)
-	 */
+public final class CanvasFactory implements ch.blackspirit.graphics.CanvasFactory {
+	private CanvasProperties properties;
+	
+	private static boolean textureIOSetup = false;
+	
+	public CanvasFactory() {
+		this.properties = new CanvasProperties();
+		URL url = this.getClass().getResource("/bsgraphics.properties");
+		if(url != null) {
+			properties.load(url);
+		}
+		if (textureIOSetup == false) {
+			TextureIO.addTextureProvider(new ImageIOTextureProvider());
+			textureIOSetup = true;
+		}
+	}
+
+	public CanvasProperties getProperties() {
+		return properties;
+	}
+	public void setProperties(CanvasProperties properties) {
+		this.properties = properties;
+	}
+
 	public AWTCanvas createAWTCanvas(boolean lightweight) {
-		return new ch.blackspirit.graphics.jogl.AWTCanvas(lightweight);
+		return new ch.blackspirit.graphics.jogl.AWTCanvas(lightweight, properties);
 	}
-	/* (non-Javadoc)
-	 * @see ch.blackspirit.graphics.CanvasFactory#createRealtimeCanvasFullscreen(ch.blackspirit.graphics.DisplayMode, float, float)
-	 */
 	public RealtimeCanvas createRealtimeCanvasFullscreen(DisplayMode displayMode) {
-		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(displayMode);
+		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(displayMode, properties);
 	}
-	/* (non-Javadoc)
-	 * @see ch.blackspirit.graphics.CanvasFactory#createRealtimeCanvasFullscreen(ch.blackspirit.graphics.DisplayMode, float, float)
-	 */
 	public RealtimeCanvas createRealtimeCanvasFullscreen() {
-		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(null);
+		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(null, properties);
 	}
-	/* (non-Javadoc)
-	 * @see ch.blackspirit.graphics.CanvasFactory#createRealtimeCanvasWindow(int, int, float, float)
-	 */
 	public RealtimeCanvas createRealtimeCanvasWindow(int width, int height) {
-		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(width, height);
+		return new ch.blackspirit.graphics.jogl.RealtimeCanvas(width, height, properties);
 	}
-	/* (non-Javadoc)
-	 * @see ch.blackspirit.graphics.CanvasFactory#getDisplayMode(int, int)
-	 */
+
 	public DisplayMode getDisplayMode(int width, int height) {
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice dev = env.getDefaultScreenDevice();

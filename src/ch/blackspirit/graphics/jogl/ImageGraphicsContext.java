@@ -28,7 +28,7 @@ import ch.blackspirit.graphics.debug.TraceGraphics;
 /**
  * @author Markus Koller
  */
-class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blackspirit.graphics.ImageGraphicsContext {
+final class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blackspirit.graphics.ImageGraphicsContext {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
 	private RenderContext context;
@@ -44,7 +44,7 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 	
 	private TraceGraphics traceGraphics = new TraceGraphics();
 
-	public ImageGraphicsContext(Image image, RenderContext context, ResourceManager resourceManager, RuntimeProperties runtimeProperties, BSGraphicsProperties properties) {
+	public ImageGraphicsContext(Image image, RenderContext context, ResourceManager resourceManager, RuntimeProperties runtimeProperties, CanvasProperties properties) {
 		super();
 		this.image = image;
 		this.context = context;
@@ -55,7 +55,7 @@ class ImageGraphicsContext extends AbstractGraphicsContext implements ch.blacksp
 		this.graphics = new ImageGraphics(image, delegate, this.resourceManager, view);
 		this.glEventListener = new ImageGLEventListener(this);
 		this.glEventListener.setDebugGL(properties.isDebugGL());
-		this.glEventListener.setTrace(properties.isTrace());
+		this.glEventListener.setTrace(properties.isTraceEnabled());
 		this.glEventListener.setTraceLevel(properties.getTraceLogLevel());
 	}
 

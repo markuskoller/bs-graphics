@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import ch.blackspirit.graphics.ResourceManager;
 /**
  * @author Markus Koller
  */
-class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.AWTCanvas, GLExecutor, GLEventListener, ComponentListener, RuntimeProperties {
+final class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphics.AWTCanvas, GLExecutor, GLEventListener, ComponentListener, RuntimeProperties {
 	private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 	
 	private static final class UpdateRunnable implements Runnable {
@@ -66,7 +66,7 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 		PBUFFER_CAPABILITIES.setAlphaBits(8);
 	}
 	
-	private BSGraphicsProperties properties = new BSGraphicsProperties();
+	private final CanvasProperties properties;
 	
 	private boolean lightweight;
 	private GLContext glContext = null;
@@ -95,7 +95,8 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 
 	private GraphicsListener graphicsListener;
 
-	public AWTCanvas(boolean lightweight) {
+	public AWTCanvas(boolean lightweight, CanvasProperties properties) {
+		this.properties = properties;
 		this.lightweight = lightweight;
 //		view.setSize(mode.getWidth(), mode.getHeight());
 		view.setCamera(0, 0, 0);
@@ -105,12 +106,12 @@ class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.graphi
 		canvasGraphics = new CanvasGraphics(delegate, view);
         canvasGLEventListener = new CanvasGLEventListener(this, resourceManager, imageFactory, view, canvasGraphics);
         canvasGLEventListener.setDebugGL(properties.isDebugGL());
-        canvasGLEventListener.setTrace(properties.isTrace());
+        canvasGLEventListener.setTrace(properties.isTraceEnabled());
         canvasGLEventListener.setTraceLevel(properties.getTraceLogLevel());
         canvasRenderContext.setMainGLEventListener(canvasGLEventListener);
 
         executableListener.setDebugGL(properties.isDebugGL());
-        executableListener.setTrace(properties.isTrace());
+        executableListener.setTrace(properties.isTraceEnabled());
         executableListener.setTraceLevel(properties.getTraceLogLevel());
 	}
 	

@@ -20,7 +20,7 @@ import javax.media.opengl.GL;
 /**
  * @author Markus Koller
  */
-public class Rotation implements Transformation {
+public final class Rotation implements Transformation {
 	private float angle = 0;
 	public Rotation() {}
 	
