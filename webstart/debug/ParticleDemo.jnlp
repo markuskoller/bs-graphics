@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics" href="ParticleDemo.jnlp">
+<jnlp spec="1.0+" codebase="http://www.blackspirit.ch/projects/bsgraphics/debug" href="ParticleDemo.jnlp">
 	<information>
 		<title>Particle Demo</title>
 		<vendor>Markus Koller</vendor>
@@ -13,7 +13,7 @@
 	<resources>
 		<j2se max-heap-size="128m" href="http://java.sun.com/products/autodl/j2se" version="1.5+" 
 			java-vm-args="-Dsun.java2d.noddraw=true"/>
-		<jar href="BSGraphicsDemo.jar"/>
+		<jar href="BSGraphicsDemoDebug.jar"/>
 		<extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-1.1.1/webstart/jogl.jnlp" />
 		<extension name="JInput" href="jinput.jnlp"/> 
 		<extension name="BSGraphics" href="bsgraphics.jnlp"/> 

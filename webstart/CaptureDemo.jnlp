@@ -11,10 +11,10 @@
 		<all-permissions/>
 	</security>
 	<resources>
-		<j2se max-heap-size="128m" href="http://java.sun.com/products/autodl/j2se" version="1.5+" java-vm-args=""/>
+		<j2se max-heap-size="128m" href="http://java.sun.com/products/autodl/j2se" version="1.5+" 
+			java-vm-args="-Dsun.java2d.noddraw=true"/>
 		<jar href="BSGraphicsDemo.jar"/>
-		<extension name="Gluegen" href="gluegen-rt.jnlp"/> 
-		<extension name="JOGL" href="jogl.jnlp"/> 
+		<extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-1.1.1/webstart/jogl.jnlp" />
 		<extension name="JInput" href="jinput.jnlp"/> 
 		<extension name="BSGraphics" href="bsgraphics.jnlp"/> 
 	</resources>
