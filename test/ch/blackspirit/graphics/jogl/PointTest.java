@@ -2,45 +2,14 @@ package ch.blackspirit.graphics.jogl;
 
 import javax.vecmath.Color4f;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
 import ch.blackspirit.graphics.GraphicsListener;
 import ch.blackspirit.graphics.View;
-import ch.blackspirit.graphics.WindowListener;
 
-public class PointTest {
-	private static final boolean VIEW_TESTS = true;
-	
-	private GraphicsContext context;
-	private ch.blackspirit.graphics.RealtimeCanvas canvas;
-	private boolean finish;
-	
-	@Before
-	public void setup() {
-		finish = !VIEW_TESTS;
-		canvas = new CanvasFactory().createRealtimeCanvasWindow(800, 600);
-		context = canvas;
-		canvas.addWindowListener(new WindowListener() {
-			public void windowActivated() {}
-			public void windowClosed() {}
-			public void windowClosing() {
-				finish = true;
-			}
-			public void windowDeactivated() {}
-			public void windowDeiconified() {}
-			public void windowIconified() {}
-		});
-	}
-	
-	@After
-	public void teardown() {
-		context.dispose();
-	}
-
+public class PointTest extends JoglTestBase {
 	@Test
 	public void drawPoints() {
 		context.setGraphicsListener(new GraphicsListener() {
@@ -52,7 +21,7 @@ public class PointTest {
 			public void init(View view, Graphics renderer) {}
 			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
 		});
-		do {context.draw();} while (!finish);
+		context.draw();	
 	}
 	@Test
 	public void drawPointsWithColor() {
@@ -69,6 +38,6 @@ public class PointTest {
 			public void init(View view, Graphics renderer) {}
 			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
 		});
-		do {context.draw();} while (!finish);
+		context.draw();	
 	}
 }

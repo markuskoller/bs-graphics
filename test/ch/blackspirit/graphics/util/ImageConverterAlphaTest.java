@@ -5,13 +5,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.vecmath.Color4f;
 
-import ch.blackspirit.graphics.AWTCanvas;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
 import ch.blackspirit.graphics.GraphicsListener;
@@ -47,7 +45,7 @@ public class ImageConverterAlphaTest {
 		gradient.drawGradient(image);
 		
 		BufferedImage bimage = null;
-		long time = System.nanoTime();
+//		long time = System.nanoTime();
 //		for(int i = 0; i < 100; i++) {
 			bimage = AWTUtil.readImageBuffer(image);
 //		}
@@ -58,7 +56,7 @@ public class ImageConverterAlphaTest {
 		af.scale(.5, .5);
 		AffineTransformOp op = new AffineTransformOp(af, AffineTransformOp.TYPE_BILINEAR);
 		BufferedImage orig = bimage;
-		long time3 = System.nanoTime();
+//		long time3 = System.nanoTime();
 //		for(int i = 0; i < 100; i++) {
 			bimage = op.filter(orig, null);
 //		}

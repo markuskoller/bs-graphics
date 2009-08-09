@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package ch.blackspirit.graphics.demo;
 
 import java.awt.Dimension;
+import java.net.URL;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -79,11 +80,11 @@ public class VideoRenderer implements ControllerListener {
     	return bsGraphicsRenderer.isUpdated();
     }
 	
-	public boolean open(MediaLocator ml) {
+	public boolean open(URL url) {
 		try {
-		    processor = Manager.createProcessor(ml);
+		    processor = Manager.createProcessor(new MediaLocator(url));
 		} catch (Exception ex) {
-		    System.out.println("failed to create a processor for movie " + ml);
+		    System.out.println("failed to create a processor for movie " + url);
 		    return false;
 		}
 
@@ -184,7 +185,7 @@ public class VideoRenderer implements ControllerListener {
 		    processor.start();
 		    
 		    // no loop
-		    // p.close();
+		    // processor.close();
 		}	
 	}
 	
@@ -281,20 +282,26 @@ public class VideoRenderer implements ControllerListener {
 	    }
 	    
 	    public boolean isUpdated() {
-	       	imageLock.lock();
-	        boolean u = updated;
-	        imageLock.unlock();
-	        return u;
+	    	try {
+		       	imageLock.lock();
+		        boolean u = updated;
+		        return u;
+	    	} finally {
+		        imageLock.unlock();
+	    	}
 	    }
 	    
 	    public Image getImage() {
-	    	imageLock.lock();
-	    	Image image = backBuffer;
-	    	backBuffer = frontBuffer;
-	    	frontBuffer = image;
-	    	updated = false;
-	    	imageLock.unlock();
-	    	return image;
+	    	try {
+		       	imageLock.lock();
+		    	Image image = backBuffer;
+		    	backBuffer = frontBuffer;
+		    	frontBuffer = image;
+		    	updated = false;
+		    	return image;
+	    	} finally {
+		    	imageLock.unlock();
+	    	}
 	    }
 	    public void setFrontBuffer(Image frontBuffer) {
 			this.frontBuffer = frontBuffer;
@@ -310,59 +317,62 @@ public class VideoRenderer implements ControllerListener {
 			if ( buffer.getLength() <= 0 ) 
 			    return BUFFER_PROCESSED_OK;
 		
+			// Buffer is a byte array containing BGR data (3 bytes per pixel)
 			byte[] rawData =(byte[])(buffer.getData());
 		
-		    imageLock.lock();
-
-		    BufferType bufferType = backBuffer.getBufferType();
-		
-		    if(bufferType == BufferTypes.RGB_3Byte) {
-		    	// Handle a RGB_3Byte buffer efficiently
-		    	byte[] data = (byte[])backBuffer.getBuffer();
-		    	int width = backBuffer.getWidth();
-				int ip = 0;
-			    for ( int y = inHeight - 1; y >= 0; y-- ) {
-					for ( int x = 0; x < inWidth; x++) {
-						int indexBase = (y * width + x) * 3;
-						data[indexBase + 2] = rawData[ip++];
-						data[indexBase + 1] = rawData[ip++];
-						data[indexBase] = rawData[ip++];
-					}
-				} 
-		    } else if(bufferType == BufferTypes.RGBA_4Byte) {
-		    	// Handle a RGBA_4Byte buffer efficiently
-		    	byte[] data = (byte[])backBuffer.getBuffer();
-		    	int width = backBuffer.getWidth();
-				int ip = 0;
-			    for ( int y = inHeight - 1; y >= 0; y-- ) {
-					for ( int x = 0; x < inWidth; x++) {
-						int indexBase = (y * width + x) * 4;
-						data[indexBase + 2] = rawData[ip++];
-						data[indexBase + 1] = rawData[ip++];
-						data[indexBase] = rawData[ip++];
-						data[indexBase + 3] = (byte)255;
-					}
-				} 
-		    } else {
-		    	// Handling an unknown buffer will be pretty inefficient!
-				int ip = 0;
-				Color4f color = new Color4f();
-				color.w = 1.0f;
-				float v = 1.0f / 255;
-			    for ( int y = inHeight - 1; y >= 0; y-- ) {
-					for ( int x = 0; x < inWidth; x++) {
-						color.z = v * (int)rawData[ip++];
-						color.y = v * (int)rawData[ip++];
-						color.x = v * (int)rawData[ip++];
-						bufferType.setColor(backBuffer, x, y, color);
-					}
-				} 
-		    }
-
-			updated = true;
-		    imageLock.unlock();
-		
-			return BUFFER_PROCESSED_OK;
+			try {
+			    imageLock.lock();
+	
+			    BufferType bufferType = backBuffer.getBufferType();
+			
+			    if(bufferType == BufferTypes.RGB_3Byte) {
+			    	// Handle a RGB_3Byte buffer efficiently
+			    	byte[] data = (byte[])backBuffer.getBuffer();
+			    	int width = backBuffer.getWidth();
+					int ip = 0;
+				    for ( int y = inHeight - 1; y >= 0; y-- ) {
+						for ( int x = 0; x < inWidth; x++) {
+							int indexBase = (y * width + x) * 3;
+							data[indexBase + 2] = rawData[ip++];
+							data[indexBase + 1] = rawData[ip++];
+							data[indexBase] = rawData[ip++];
+						}
+					} 
+			    } else if(bufferType == BufferTypes.RGBA_4Byte) {
+			    	// Handle a RGBA_4Byte buffer efficiently
+			    	byte[] data = (byte[])backBuffer.getBuffer();
+			    	int width = backBuffer.getWidth();
+					int ip = 0;
+				    for ( int y = inHeight - 1; y >= 0; y-- ) {
+						for ( int x = 0; x < inWidth; x++) {
+							int indexBase = (y * width + x) * 4;
+							data[indexBase + 2] = rawData[ip++];
+							data[indexBase + 1] = rawData[ip++];
+							data[indexBase] = rawData[ip++];
+							data[indexBase + 3] = (byte)255;
+						}
+					} 
+			    } else {
+			    	// Handling an unknown buffer will be pretty inefficient!
+					int ip = 0;
+					Color4f color = new Color4f();
+					color.w = 1.0f;
+					float v = 1.0f / 255;
+				    for ( int y = inHeight - 1; y >= 0; y-- ) {
+						for ( int x = 0; x < inWidth; x++) {
+							color.z = v * (int)rawData[ip++];
+							color.y = v * (int)rawData[ip++];
+							color.x = v * (int)rawData[ip++];
+							bufferType.setColor(backBuffer, x, y, color);
+						}
+					} 
+			    }
+	
+				updated = true;
+				return BUFFER_PROCESSED_OK;
+	    	} finally {
+		    	imageLock.unlock();
+	    	}
 	    }
 
 	    

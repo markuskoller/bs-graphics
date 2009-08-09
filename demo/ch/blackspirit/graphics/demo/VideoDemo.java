@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import javax.media.Codec;
 import javax.media.Demultiplexer;
-import javax.media.MediaLocator;
 import javax.media.PlugInManager;
 import javax.swing.JFileChooser;
 import javax.vecmath.Color4f;
@@ -46,6 +45,9 @@ import ch.blackspirit.graphics.jogl.CanvasFactory;
 public class VideoDemo {
 	private final static int WIDTH = 800;
 	private final static int HEIGHT = 600;
+	
+	private float sizeDivider = 1;
+	private int rotate = 0;
 
 	RealtimeCanvas canvas;
 	
@@ -84,9 +86,12 @@ public class VideoDemo {
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
 		canvas.setWindowTitle("Video Demo");
 
+		// JMF just loads jmf.properties from classpath root (not working in Webstart)
+		// JMFInitializer helps loading them from any URL 
+		JMFInitializer.initJMF(this.getClass().getResource("jmf.properties"));
 		
-		// Registering FOBS JMF plugin
 		try {
+			// Registering FOBS JMF plugins
 			String FFMPEG_VIDEO_NATIVE = "com.omnividea.media.codec.video.NativeDecoder"; 
 		    Codec videoNative = (Codec) Class.forName(FFMPEG_VIDEO_NATIVE).newInstance();
 		    PlugInManager.addPlugIn(FFMPEG_VIDEO_NATIVE,
@@ -94,36 +99,26 @@ public class VideoDemo {
 		            videoNative.getSupportedOutputFormats(null),
 		            PlugInManager.CODEC);
 
-		    String FFMPEG_AUDIO_NATIVE = "com.omnividea.media.codec.audio.NativeDecoder";
-		    Codec audioNative = (Codec) Class.forName(FFMPEG_AUDIO_NATIVE).newInstance();
-		    PlugInManager.addPlugIn(FFMPEG_AUDIO_NATIVE,
-		    		audioNative.getSupportedInputFormats(),
-		    		audioNative.getSupportedOutputFormats(null),
-		            PlugInManager.CODEC);
+		    //
+//		    String FFMPEG_AUDIO_NATIVE = "com.omnividea.media.codec.audio.NativeDecoder";
+//		    Codec audioNative = (Codec) Class.forName(FFMPEG_AUDIO_NATIVE).newInstance();
+//		    PlugInManager.addPlugIn(FFMPEG_AUDIO_NATIVE,
+//		    		audioNative.getSupportedInputFormats(),
+//		    		audioNative.getSupportedOutputFormats(null),
+//		            PlugInManager.CODEC);
 
-//		    for(Format format: audioNative.getSupportedInputFormats()) {
-//		    	System.out.println(format);
-//		    }
-		    
 //		    String FFMPEG_VIDEO = "com.omnividea.media.codec.video.JavaDecoder"; 
 //		    Codec video = (Codec) Class.forName(FFMPEG_VIDEO).newInstance();
 //		    PlugInManager.addPlugIn(FFMPEG_VIDEO,
 //		            video.getSupportedInputFormats(),
 //		            video.getSupportedOutputFormats(null),
 //		            PlugInManager.CODEC);
-//
+
 //			String FFMPEG_AUDIO = "com.omnividea.media.codec.audio.JavaDecoder";
 //		    Codec audio= (Codec) Class.forName(FFMPEG_AUDIO).newInstance();
 //		    PlugInManager.addPlugIn(FFMPEG_AUDIO,
 //		    		audio.getSupportedInputFormats(),
 //		    		audio.getSupportedOutputFormats(null),
-//		            PlugInManager.CODEC);
-
-//			String MP3 = "com.sun.media.codec.audio.mp3.JavaDecoder";
-//		    Codec mp3 = (Codec) Class.forName(MP3).newInstance();
-//		    PlugInManager.addPlugIn(MP3,
-//		            mp3.getSupportedInputFormats(),
-//		            mp3.getSupportedOutputFormats(null),
 //		            PlugInManager.CODEC);
 
 			String FFMPEG_DEMUX = "com.omnividea.media.parser.video.Parser"; 
@@ -132,15 +127,23 @@ public class VideoDemo {
 		    		demux.getSupportedInputContentDescriptors(),
 		    		null,
 		            PlugInManager.DEMULTIPLEXER);
+
+		    // Registering Sun MP3 plugin
+//			String MP3 = "com.sun.media.codec.audio.mp3.JavaDecoder";
+//		    Codec mp3 = (Codec) Class.forName(MP3).newInstance();
+//		    PlugInManager.addPlugIn(MP3,
+//		            mp3.getSupportedInputFormats(),
+//		            mp3.getSupportedOutputFormats(null),
+//		            PlugInManager.CODEC);
+
 		    
 		} catch (Exception e) {
-		    e.printStackTrace();
+		    throw new RuntimeException("Error loading codecs", e);
 		}
 		
 		// Creating video renderer
 		final VideoRenderer videoRenderer = new VideoRenderer(canvas.getImageFactory());
-		MediaLocator mediaLocator = new MediaLocator(file.toURI().toURL());
-		if(!videoRenderer.open(mediaLocator)) System.exit(0);
+		if(!videoRenderer.open(file.toURI().toURL())) System.exit(0);
 
 		canvas.setGraphicsListener(new GraphicsListener() {
 			long start = System.nanoTime();
@@ -150,7 +153,6 @@ public class VideoDemo {
 
 			Color4f red = new Color4f(1,0,0,1);
 			Color4f white = new Color4f(1,1,1,1);
-			float factor = 800f / videoRenderer.getWidth();
 			Image image = null;
 			
 			public void draw(View view, Graphics graphics) {
@@ -166,11 +168,16 @@ public class VideoDemo {
 					image = videoRenderer.getCurrentImage();
 					image.updateCache();
 				}
+
+				float sizeFactor = (WIDTH / (float)sizeDivider) / (float)image.getWidth();
+
+				// Position and rotate video image
+				graphics.rotate(rotate);
+				graphics.translate((WIDTH / 2) / (float)sizeDivider, image.getHeight() * sizeFactor / 2);
 				
 				// Drawing video image
 				if(image != null) {
-					graphics.translate(400, videoRenderer.getHeight() * factor / 2);
-					graphics.drawImage(image, image.getWidth() * factor, image.getHeight() * factor);
+					graphics.drawImage(image, image.getWidth() * sizeFactor, image.getHeight() * sizeFactor);
 				}
 				
 				// draw frames per second
@@ -196,6 +203,7 @@ public class VideoDemo {
 			public void sizeChanged(GraphicsContext canvas, View view) {}
 		});
 		
+		// Start the video
 		if(!videoRenderer.start()) System.exit(0);
 		
 		long lastVSyncChange = 0;
@@ -216,9 +224,34 @@ public class VideoDemo {
 						lastVSyncChange = time;
 					}
 				}
+				
+				// Keys 1 - 5 influence scale (1 = Fullscreen)
+				if(keyboard.isKeyDown(Key._1)) {
+					sizeDivider = 1;
+				}
+				if(keyboard.isKeyDown(Key._2)) {
+					sizeDivider = 1.5f;
+				}
+				if(keyboard.isKeyDown(Key._3)) {
+					sizeDivider = 2;
+				}
+				if(keyboard.isKeyDown(Key._4)) {
+					sizeDivider = 3;
+				}
+				if(keyboard.isKeyDown(Key._5)) {
+					sizeDivider = 4;
+				}
+				
+				// Rotate Video
+				if(keyboard.isKeyDown(Key.LEFT)) {
+					rotate -= 2;
+				}
+				if(keyboard.isKeyDown(Key.RIGHT)) {
+					rotate += 2;
+				}
 			}
 			
-			// On some systems vsync blocks video decoding, so we give it some time
+			// On some systems vsync blocks video decoding, so we give it some time, this is a dirty workaround
 			Thread.sleep(10);
 			
 			canvas.draw();

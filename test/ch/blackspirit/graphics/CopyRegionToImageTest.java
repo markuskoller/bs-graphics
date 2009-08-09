@@ -20,28 +20,8 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.Random;
 
 import javax.vecmath.Color4f;
-
-import ch.blackspirit.graphics.CanvasFactory;
-import ch.blackspirit.graphics.DisplayMode;
-import ch.blackspirit.graphics.DrawingMode;
-import ch.blackspirit.graphics.Flip;
-import ch.blackspirit.graphics.Graphics;
-import ch.blackspirit.graphics.GraphicsContext;
-import ch.blackspirit.graphics.GraphicsListener;
-import ch.blackspirit.graphics.Image;
-import ch.blackspirit.graphics.RealtimeCanvas;
-import ch.blackspirit.graphics.ResourceManager;
-import ch.blackspirit.graphics.View;
-import ch.blackspirit.graphics.WindowListener;
-import ch.blackspirit.graphics.anim.Animation;
-import ch.blackspirit.graphics.anim.AnimationImpl;
-import ch.blackspirit.graphics.anim.Frame;
-import ch.blackspirit.graphics.anim.FrameImpl;
-import ch.blackspirit.graphics.jogl.BufferTypes;
-import ch.blackspirit.graphics.util.ColorGradientFactory;
 
 public class CopyRegionToImageTest  {
 	private final static int WIDTH = 800;

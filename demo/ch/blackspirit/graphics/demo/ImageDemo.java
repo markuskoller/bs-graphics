@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -389,7 +389,7 @@ public class ImageDemo  {
 				if(keyboard.isKeyDown(Key.Q) || keyboard.isKeyDown(Key.ESCAPE)) {
 					canvas.dispose();
 					System.exit(0);
-				}
+				}	
 				// VSync
 				if(keyboard.isKeyDown(Key.S)) {
 					long time = System.currentTimeMillis();

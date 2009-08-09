@@ -2,44 +2,146 @@ package ch.blackspirit.graphics.jogl;
 
 import javax.vecmath.Color4f;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
 import ch.blackspirit.graphics.GraphicsListener;
 import ch.blackspirit.graphics.View;
-import ch.blackspirit.graphics.WindowListener;
 import ch.blackspirit.graphics.shape.Line;
 
-public class LineTest {
-	private static final boolean VIEW_TESTS = true;
-	
-	private GraphicsContext context;
-	private ch.blackspirit.graphics.RealtimeCanvas canvas;
-	private boolean finish;
-	
-	@Before
-	public void setup() {
-		finish = !VIEW_TESTS;
-		canvas = new CanvasFactory().createRealtimeCanvasWindow(800, 600);
-		context = canvas;
-		canvas.addWindowListener(new WindowListener() {
-			public void windowActivated() {}
-			public void windowClosed() {}
-			public void windowClosing() {
-				finish = true;
+public class LineTest extends JoglTestBase {
+	@Test (expected=IllegalArgumentException.class)
+	public void drawLineNull() {
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLine(null, true);
 			}
-			public void windowDeactivated() {}
-			public void windowDeiconified() {}
-			public void windowIconified() {}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
 		});
+		context.draw();
 	}
+
+	@Test (expected=IllegalArgumentException.class)
+	public void drawLinesNull() {
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(null, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+
 	
-	@After
-	public void teardown() {
-		context.dispose();
+	@Test
+	public void drawLinesWithColor() {
+		final Line[] lines = getLines(false, false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(lines, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test
+	public void drawLines() {
+		final Line[] lines = getLines(false, false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(lines, false);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test
+	public void drawLinesWithColorAndNull() {
+		final Line[] lines = getLines(true, false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(lines, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test
+	public void drawLinesWithNull() {
+		final Line[] lines = getLines(true, false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(lines, false);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test
+	public void drawLinesWithColorNull() {
+		final Line[] lines = getLines(false, true);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLines(lines, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+
+	@Test 
+	public void drawLineWithColor() {
+		final Line lines = getLine(false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLine(lines, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test 
+	public void drawLine() {
+		final Line lines = getLine(false);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLine(lines, false);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
+	}
+	@Test 
+	public void drawLineWithColorNull() {
+		final Line lines = getLine(true);
+		context.setGraphicsListener(new GraphicsListener() {
+			public void draw(View view, Graphics graphics) {
+				graphics.clear();
+				graphics.drawLine(lines, true);
+			}
+			public void init(View view, Graphics renderer) {}
+			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
+		});
+		context.draw();
 	}
 
 	private Line getLine(boolean includeColorNull) {
@@ -82,111 +184,5 @@ public class LineTest {
 		for(int i = 0; i < 2; i++) {
 			line.setColor(i, color);
 		}
-	}
-	
-	@Test
-	public void drawLinesWithColor() {
-		final Line[] lines = getLines(false, false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLines(lines, true);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test
-	public void drawLines() {
-		final Line[] lines = getLines(false, false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLines(lines, false);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test
-	public void drawLinesWithColorAndNull() {
-		final Line[] lines = getLines(true, false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLines(lines, true);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test
-	public void drawLinesWithNull() {
-		final Line[] lines = getLines(true, false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLines(lines, false);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test
-	public void drawLinesWithColorNull() {
-		final Line[] lines = getLines(false, true);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLines(lines, true);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-
-	@Test 
-	public void drawLineWithColor() {
-		final Line lines = getLine(false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLine(lines, true);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test 
-	public void drawLine() {
-		final Line lines = getLine(false);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLine(lines, false);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
-	}
-	@Test 
-	public void drawLineWithColorNull() {
-		final Line lines = getLine(true);
-		context.setGraphicsListener(new GraphicsListener() {
-			public void draw(View view, Graphics graphics) {
-				graphics.clear();
-				graphics.drawLine(lines, true);
-			}
-			public void init(View view, Graphics renderer) {}
-			public void sizeChanged(GraphicsContext graphicsContext, View view) {}
-		});
-		do {context.draw();} while (!finish);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
 import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller.Type;
-import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
 import ch.blackspirit.graphics.GraphicsListener;
@@ -49,9 +48,6 @@ import ch.blackspirit.graphics.util.TextureMapper;
  * @author Markus Koller
  */
 public class ShapeDemo  {
-	private final static int WIDTH = 800;
-	private final static int HEIGHT = 600;
-
 	RealtimeCanvas canvas;
 	
 	public static void main(String []args) throws IOException {
@@ -70,14 +66,8 @@ public class ShapeDemo  {
 		}
 
 		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
-
 		// Create a fullscreen realtime canvas using the current display mode.
-//		DisplayMode mode = factory.getDisplayMode(WIDTH, HEIGHT);
-//		if(mode != null) {
-//			canvas = factory.createRealtimeCanvasFullscreen(mode);
-//		} else {
-			canvas = factory.createRealtimeCanvasFullscreen();
-//		}
+		canvas = factory.createRealtimeCanvasFullscreen();
 
 		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
