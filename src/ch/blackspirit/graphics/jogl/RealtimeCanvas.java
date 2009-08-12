@@ -73,6 +73,8 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 	private JFrame frame;
 	private String title = "";
 	private boolean fullscreen = false;
+	
+	private boolean usePBuffer = true;
 
 	private GLContext glContext = null;
 	private GLCanvas canvas;
@@ -114,7 +116,6 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 		view.setCamera(0, 0, 0);
 
 		setFullscreen(displayMode);
-		
 		initializeGraphics();
 	}
 	public RealtimeCanvas(int width, int height, CanvasProperties properties) {
@@ -125,7 +126,6 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 		view.setCamera(0, 0, 0);
 		
 		setWindow(width, height);
-		
 		initializeGraphics();
 	}
 	
@@ -148,11 +148,14 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
         executableListener.setDebugGL(properties.isDebugGL());
         executableListener.setTrace(properties.isTraceEnabled());
         executableListener.setTraceLevel(properties.getTraceLogLevel());
-
+        
 		SupportGLExecutable supportGLExecutable = new SupportGLExecutable();
 		execute(supportGLExecutable);
 		isGlExtBlendSubtractSupported = supportGLExecutable.isGlExtBlendSubtractSupported;
-		LOGGER.info("Is drawing mode subtract supported: " + isGlExtBlendSubtractSupported);
+		LOGGER.info("Graphics Card info: " + supportGLExecutable.vendor + 
+				" - " + supportGLExecutable.renderer + 
+				" - " +	supportGLExecutable.version);
+		LOGGER.info("DrawingMode.SUBTRACT supported: " + isGlExtBlendSubtractSupported);
 	}
 	
 	public boolean execute(GLExecutable glExecutable) {
@@ -190,11 +193,23 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 			boolean cannotCreatePBuffer = !GLDrawableFactory.getFactory().canCreateGLPbuffer();
 			// debug fallback
 			if(!properties.isPBuffer()) cannotCreatePBuffer = true;
+			if(!usePBuffer) cannotCreatePBuffer = true;
 			if(!cannotCreatePBuffer) {
 				try {
 					imageDrawable = GLDrawableFactory.getFactory().createGLPbuffer(PBUFFER_CAPABILITIES, null, imageDrawingWidth, imageDrawingHeight, glContext);
 					glContext = imageDrawable.getContext();
 					imageRenderContext.setDrawable(imageDrawable);
+					
+					SupportGLExecutable supportGLExecutable = new SupportGLExecutable();
+					execute(supportGLExecutable);
+					String vendor = supportGLExecutable.vendor;
+					if (vendor != null && vendor.toLowerCase().contains("intel")) {
+						imageDrawable.getContext().destroy();
+						imageDrawable = null;
+						glContext = null;
+						usePBuffer = false;
+						cannotCreatePBuffer = true;
+					}
 				} catch(Exception e) {
 					cannotCreatePBuffer = true;
 					imageDrawable = null;
@@ -202,7 +217,10 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 				}
 			}
 			if(cannotCreatePBuffer)	{
-				LOGGER.info("Unable to create pbuffer using frame buffer instead");
+				if (usePBuffer)
+					LOGGER.info("Unable to create pbuffer. Using frame buffer for image drawing.");
+				else
+					LOGGER.info("Not using pbuffer with Intel graphics cards. Using frame buffer for image drawing.");
 				imageRenderContext.setDelegateRenderContext(canvasRenderContext);
 			}
 		}
@@ -391,7 +409,11 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 	
 	public void dispose() {
 		canvas.getContext().destroy();
+		imageDrawable.getContext().destroy();
 		frame.dispose();
+		canvas = null;
+		frame = null;
+		imageDrawable = null;
 	}
 	public ResourceManager getResourceManager() {
 		return resourceManager;
@@ -491,17 +513,17 @@ final class RealtimeCanvas extends AbstractGraphicsContext implements ch.blacksp
 	 */
 	private static class NoPaintGLCanvas extends GLCanvas {
 		private static final long serialVersionUID = 1L;
-		public NoPaintGLCanvas() {
+		/*public NoPaintGLCanvas() {
 			super();
-		}
+		}*/
 		public NoPaintGLCanvas(GLCapabilities capabilities,
 				GLCapabilitiesChooser chooser, GLContext shareWith,
 				GraphicsDevice device) {
 			super(capabilities, chooser, shareWith, device);
 		}
-		public NoPaintGLCanvas(GLCapabilities capabilities) {
+		/*public NoPaintGLCanvas(GLCapabilities capabilities) {
 			super(capabilities);
-		}
+		}*/
 		// Paint does nothing!
 		public void paint(Graphics g) {}
 	}

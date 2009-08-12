@@ -1,6 +1,6 @@
 
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2008-2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,6 @@ public class Sorter<T extends Object> {
 		x[b] = t;
     }
 	
-	@SuppressWarnings("unchecked")
 	public void sort(ArrayList<T> list, Comparator<T> comparator){
 		int low = 0;
 		int high = list.size();

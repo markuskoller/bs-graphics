@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Markus Koller
+ * Copyright 2008-2009 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,17 @@ import javax.media.opengl.GLDrawable;
  */
 final class SupportGLExecutable implements GLExecutable {
 	public boolean isGlExtBlendSubtractSupported = true;
+	public String vendor;
+	public String renderer;
+	public String version;
 	public void execute(GLDrawable drawable, GL gl) {
 		try {
 			gl.glBlendEquation(GL.GL_FUNC_REVERSE_SUBTRACT);
 			if(gl.glGetError() != GL.GL_NO_ERROR) isGlExtBlendSubtractSupported = false;
+			
+			vendor = gl.glGetString(GL.GL_VENDOR);
+			renderer = gl.glGetString(GL.GL_RENDERER);
+			version = gl.glGetString(GL.GL_VERSION);
 		} catch (Throwable t) {
 			isGlExtBlendSubtractSupported = false;
 		}

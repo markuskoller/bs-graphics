@@ -67,6 +67,8 @@ final class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.
 	}
 	
 	private final CanvasProperties properties;
+
+	private boolean usePBuffer = true;
 	
 	private boolean lightweight;
 	private GLContext glContext = null;
@@ -157,15 +159,28 @@ final class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.
 			boolean cannotCreatePBuffer = !GLDrawableFactory.getFactory().canCreateGLPbuffer();
 			// debug fallback
 			if(!properties.isPBuffer()) cannotCreatePBuffer = true;
+			if(!usePBuffer) cannotCreatePBuffer = true;
 			if(!cannotCreatePBuffer) {
 				try {
 					imageDrawable = GLDrawableFactory.getFactory().createGLPbuffer(PBUFFER_CAPABILITIES, null, imageDrawingWidth, imageDrawingHeight, glContext);
 					glContext = imageDrawable.getContext();
 					imageRenderContext.setDrawable(imageDrawable);
-			        LOGGER.info("Actual image drawing size: " + imageDrawingWidth + "x" + imageDrawingHeight);
-			        maxImageDrawingHeight = imageDrawingHeight;
-			        maxImageDrawingWidth = imageDrawingWidth;
-			        isComponentDrawingSize = false;
+					
+					SupportGLExecutable supportGLExecutable = new SupportGLExecutable();
+					execute(supportGLExecutable);
+					String vendor = supportGLExecutable.vendor;
+					if (vendor != null && vendor.toLowerCase().contains("intel")) {
+						imageDrawable.getContext().destroy();
+						imageDrawable = null;
+						glContext = null;
+						usePBuffer = false;
+						cannotCreatePBuffer = true;
+					} else {
+				        LOGGER.info("Actual image drawing size: " + imageDrawingWidth + "x" + imageDrawingHeight);
+				        maxImageDrawingHeight = imageDrawingHeight;
+				        maxImageDrawingWidth = imageDrawingWidth;
+				        isComponentDrawingSize = false;
+					}
 				} catch(Exception e) {
 					cannotCreatePBuffer = true;
 					imageDrawable = null;
@@ -173,7 +188,11 @@ final class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.
 				}
 			}
 			if(cannotCreatePBuffer)	{
-				LOGGER.info("Unable to create pbuffer using frame buffer instead");
+				if (usePBuffer)
+					LOGGER.info("Unable to create pbuffer. Using frame buffer for image drawing.");
+				else
+					LOGGER.info("Not using pbuffer with Intel graphics cards. Using frame buffer for image drawing.");
+					
 				imageRenderContext.setDelegateRenderContext(canvasRenderContext);
 			}
 		}
@@ -287,6 +306,10 @@ final class AWTCanvas extends AbstractGraphicsContext implements ch.blackspirit.
 		execute(supportGLExecutable);
 		isGlExtBlendSubtractSupported = supportGLExecutable.isGlExtBlendSubtractSupported;
 		propertiesInitialized = true;
+		LOGGER.info("Graphics Card Info: " + supportGLExecutable.vendor + 
+				" - " + supportGLExecutable.renderer + 
+				" - " +	supportGLExecutable.version);
+		LOGGER.info("DrawingMode.SUBTRACT supported: " + isGlExtBlendSubtractSupported);
 	}
 	public void display(GLAutoDrawable drawable) {}
 	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {}
