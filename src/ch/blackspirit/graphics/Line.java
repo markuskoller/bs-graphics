@@ -27,6 +27,10 @@ public interface Line {
 	 * @return Point for the given index.
 	 */
 	public Vector2f getPoint(int index);
+	/**
+	 * @param index Valid indexes are 0 and 1
+	 * @param point Point to set for the given index.
+	 */
 	public void setPoint(int index, Vector2f point);
 
 	/**
@@ -34,5 +38,9 @@ public interface Line {
 	 * @return Color for the point with the given index.
 	 */
 	public Color4f getColor(int index);
-	public void setColor(int index, Color4f point);
+	/**
+	 * @param index Valid indexes are 0 and 1
+	 * @param color Color to set with the given index.
+	 */
+	public void setColor(int index, Color4f color);
 }

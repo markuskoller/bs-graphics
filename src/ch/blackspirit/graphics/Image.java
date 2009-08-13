@@ -73,10 +73,24 @@ public interface Image {
 	 * For this operation the image must be cached, if it isn't already it will
 	 * be cached first, which results in a complete buffer update!<br/>
 	 * Only available if isBuffered() is <code>true</code>.
+	 * @param xOffset X offset of the region to update.
+	 * @param yOffset Y offset of the region to update.
+	 * @param width With of the region to update.
+	 * @param height Height of the region to update.
 	 */
 	public void updateCache(int xOffset, int yOffset, int width, int height);
 
+	/**
+	 * Updates the buffer content from the cache.
+	 */
 	public void updateBuffer();
+	/**
+	 * Updates a region of the buffer content from the cache.
+	 * @param xOffset X offset of the region to update.
+	 * @param yOffset Y offset of the region to update.
+	 * @param width With of the region to update.
+	 * @param height Height of the region to update.
+	 */
 	public void updateBuffer(int xOffset, int yOffset, int width, int height);
 	
 	// FEATURE release buffer

@@ -83,6 +83,18 @@ public interface BufferType {
 	 */
 	public abstract void setAlpha(Image image, int x, int y, float value);
 	
+	/**
+	 * @param image The image to set a pixel on.
+	 * @param x The pixels x coordinate.
+	 * @param y The pixels y coordinate.
+	 * @param color The pixels new color.
+	 */
 	public void setColor(Image image, int x, int y, Color4f color);
+	/**
+	 * @param image The image to get a pixel from.
+	 * @param x The pixels x coordinate.
+	 * @param y The pixels y coordinate.
+	 * @param color Will be set to the color of the pixel.
+	 */
 	public void getColor(Image image, int x, int y, Color4f color);
 }

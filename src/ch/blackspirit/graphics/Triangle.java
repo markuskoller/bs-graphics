@@ -27,6 +27,10 @@ public interface Triangle {
 	 * @return Point for the given index.
 	 */
 	public Vector2f getPoint(int index);
+	/**
+	 * @param index Valid indexes are 0 to 2
+	 * @param point Point to set for the given index.
+	 */
 	public void setPoint(int index, Vector2f point);
 
 	/**
@@ -34,12 +38,20 @@ public interface Triangle {
 	 * @return Color for the Point with the given index.
 	 */
 	public Color4f getColor(int index);
-	public void setColor(int index, Color4f point);
+	/**
+	 * @param index Valid indexes are 0 to 2
+	 * @param color Color to set for the given index.
+	 */
+	public void setColor(int index, Color4f color);
 
 	/**
 	 * @param index Valid indexes are 0 to 2
 	 * @return Texture coordinate for the Point with the given index.
 	 */
 	public Vector2f getTextureCoordinate(int index);
-	public void setTextureCoordinate(int index, Vector2f point);
+	/**
+	 * @param index Valid indexes are 0 to 2
+	 * @param coordinate Texture coordinates to set for the given index in pixels.
+	 */
+	public void setTextureCoordinate(int index, Vector2f coordinate);
 }

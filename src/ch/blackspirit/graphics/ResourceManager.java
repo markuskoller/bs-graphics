@@ -45,6 +45,7 @@ public interface ResourceManager {
 	 * Calling this method results in a complete update of the cached image buffer.<br/>
 	 * This method prevents time costly image caching operations from beeing performed 
 	 * during the first rendering cycle. 
+	 * @param image Image to cache.
 	 * @throws IOException If the image could not be read.
 	 * @return true if caching was successful
 	 */

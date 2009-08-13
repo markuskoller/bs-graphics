@@ -160,8 +160,8 @@ public interface Graphics {
 
 	/**
 	 * Draws a point in the current drawing color with a size of 1 pixel.<br/>
-	 * @param x1 X coordinate of first point.
-	 * @param y1 Y coordinate of first point.
+	 * @param x X coordinate of first point.
+	 * @param y Y coordinate of first point.
 	 */
 	public abstract void drawPoint(float x, float y);
 

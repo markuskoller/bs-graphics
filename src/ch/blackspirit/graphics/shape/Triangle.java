@@ -33,6 +33,11 @@ public final class Triangle implements ch.blackspirit.graphics.Triangle {
 		points[1] = new Vector2f();
 		points[2] = new Vector2f();
 	}
+	/**
+	 * @param p1 Point 1 of the triangle.
+	 * @param p2 Point 2 of the triangle.
+	 * @param p3 Point 3 of the triangle.
+	 */
 	public Triangle(Vector2f p1, Vector2f p2, Vector2f p3) {
 		points[0] = p1;
 		points[1] = p2;

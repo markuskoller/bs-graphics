@@ -29,12 +29,26 @@ public interface View {
 	public float getHeight();
 
 	/**
-	 * Setting the camera specifies which coordinate will be centered in the view.</br>
-	 * The angle (int degrees) additionally rotates the view clockwise.<br/>
+ 	 * Setting the camera specifies which coordinate will be centered in the view.</br>
+	 * The angle (in degrees) additionally rotates the view clockwise.<br/>
 	 * This must be called before any drawing during a frame, otherwise unpredictive results might occur.
+	 * @param x X position of the camera (Center of the canvas).
+	 * @param y Y position of the camera (Center of the canvas).
+	 * @param angle Clockwise rotation of the camera in degrees.
 	 */
 	public void setCamera(float x, float y, float angle);
+	/**
+ 	 * Setting the camera specifies which coordinate will be centered in the view.</br>
+	 * This must be called before any drawing during a frame, otherwise unpredictive results might occur.
+	 * @param x X position of the camera (Center of the canvas).
+	 * @param y Y position of the camera (Center of the canvas).
+	 */
 	public void setCameraPosition(float x, float y);
+	/**
+	 * The angle (in degrees) rotates the view clockwise.<br/>
+	 * This must be called before any drawing during a frame, otherwise unpredictive results might occur.
+	 * @param angle Clockwise rotation of the camera in degrees.
+	 */
 	public void setCameraAngle(float angle);
 	public float getCameraX();
 	public float getCameraY();

@@ -35,7 +35,7 @@ public interface RealtimeCanvas extends Canvas {
 	public void setWindow(int width, int height);
 	/**
 	 * Set the title to be shown in window mode. 
-	 * @param title
+	 * @param title Title to show in the title bar.
 	 */
 	public void setWindowTitle(String title);
 	public String getWindowTitle();

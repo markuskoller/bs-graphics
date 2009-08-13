@@ -58,11 +58,16 @@ public interface CanvasFactory {
 	/**
 	 * If available returns the display mode with the currently used color depth and refresh rate which is matching the
 	 * given resolution.
+	 * @param width Width of the wanted resolution.
+	 * @param height Height of the wanted resolution.
 	 * @return The display mode matching the resolution, otherwise <code>null</code>.
 	 */
 	public DisplayMode getDisplayMode(int width, int height);
 	/**
 	 * Returns the requested fullscreen display mode with the currently used refresh rate if available.
+	 * @param width Width of the wanted resolution.
+	 * @param height Height of the wanted resolution.
+	 * @param colorDepth Wanted color depth.
 	 * @return The display mode matching the criteria, otherwise <code>null</code>.
 	 */
 	public DisplayMode getDisplayMode(int width, int height, int colorDepth);

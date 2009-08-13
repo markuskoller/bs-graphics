@@ -40,12 +40,18 @@ public class TraceGraphics implements Graphics {
 	private Graphics delegate;
 
 	public TraceGraphics() {}
+	/**
+	 * @param delegate Graphics to delegate calls to.
+	 */
 	public TraceGraphics(Graphics delegate) {
 		this.delegate = delegate;
 	}
 	public Graphics getDelegate() {
 		return delegate;
 	}
+	/**
+	 * @param delegate Graphics to delegate calls to.
+	 */
 	public void setDelegate(Graphics delegate) {
 		this.delegate = delegate;
 	}
@@ -53,6 +59,9 @@ public class TraceGraphics implements Graphics {
 	public Level getLevel() {
 		return level;
 	}
+	/**
+	 * @param level Log level to use for logging.
+	 */
 	public void setLevel(Level level) {
 		this.level = level;
 	}

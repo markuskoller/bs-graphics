@@ -31,6 +31,10 @@ public final class Line implements ch.blackspirit.graphics.Line {
 		points[0] = new Vector2f();
 		points[1] = new Vector2f();
 	}
+	/**
+	 * @param p1 Point 1 of the line.
+	 * @param p2 Point 2 of the line.
+	 */
 	public Line(Vector2f p1, Vector2f p2) {
 		if(p1 == null || p2 == null) throw new IllegalArgumentException("Point must not be null");
 		points[0] = p1;
