@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Properties to be used on creation of a canvas throught the {@link CanvasFactory}.
  * @author Markus Koller
  */
 public final class CanvasProperties {

@@ -55,7 +55,7 @@ import com.sun.opengl.util.texture.spi.TextureProvider;
  * was a protected static class: TextureIO.IIOTextureProvider 
  * @author Markus Koller
  */
-public class ImageIOTextureProvider implements TextureProvider {
+class ImageIOTextureProvider implements TextureProvider {
 	public TextureData newTextureData(File file, int internalFormat,
 			int pixelFormat, boolean mipmap, String fileSuffix)
 			throws IOException {

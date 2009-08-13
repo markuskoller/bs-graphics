@@ -51,6 +51,9 @@ public final class CanvasFactory implements ch.blackspirit.graphics.CanvasFactor
 	public CanvasProperties getProperties() {
 		return properties;
 	}
+	/**
+	 * @param properties Properties to be used on creation of a canvas.
+	 */
 	public void setProperties(CanvasProperties properties) {
 		this.properties = properties;
 	}
