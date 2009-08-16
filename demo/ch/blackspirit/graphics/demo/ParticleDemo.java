@@ -67,7 +67,8 @@ public class ParticleDemo {
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
 		canvas.setWindowTitle("Particle Demo");
 		
-		final Image image = canvas.getImageFactory().createImage(ParticleDemo.class.getResource("/ch/blackspirit/graphics/particle/particle.tga"), false);
+		final Image image = canvas.getImageFactory().createImage(
+				ParticleDemo.class.getResource("/ch/blackspirit/graphics/particle/particle.png"), false);
 		canvas.getResourceManager().cacheImage(image);
 
 		// Setup fire particle system
