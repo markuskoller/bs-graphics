@@ -31,11 +31,11 @@ public class AnimationImpl<T extends Frame> implements Animation<T> {
 	private long totalTime = 0;
 	private long runningTime = 0;
 	
-	private int currentFrame = 0;
+	protected int currentFrame = 0;
 	
 	private boolean repeated = false;
 	
-	private List<T> frames = new ArrayList<T>();
+	protected List<T> frames = new ArrayList<T>();
 	private List<Long> endTimes = new ArrayList<Long>();
 
 	private int width = -1;
@@ -47,16 +47,15 @@ public class AnimationImpl<T extends Frame> implements Animation<T> {
 		
 		if(hasFinished()) {
 			currentFrame = frames.size() - 1;
-			return;
-		}
-		
-		if(animTime > totalTime) {
-			animTime = animTime % totalTime;
-			currentFrame = 0;
-		}
-		
-		while( animTime > endTimes.get(currentFrame) ) {
-			currentFrame++;
+		} else {
+			if(animTime > totalTime) {
+				animTime = animTime % totalTime;
+				currentFrame = 0;
+			}
+			
+			while( animTime > endTimes.get(currentFrame) ) {
+				currentFrame++;
+			}
 		}
 	}
 	

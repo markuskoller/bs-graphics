@@ -161,8 +161,18 @@ final class ImageGraphics implements ch.blackspirit.graphics.Graphics, ViewListe
 	public void translate(float x, float y) {
 		delegate.translate(x, y);
 	}
+	@SuppressWarnings("deprecation")
 	public void clearTransformation() {
 		delegate.clearTransformation();
+	}
+	public void clearTransform() {
+		delegate.clearTransform();
+	}
+	public void pushTransform() {
+		delegate.pushTransform();
+	}
+	public void popTransform() {
+		delegate.popTransform();
 	}
 
 	public void setDrawingMode(DrawingMode drawingMode) {

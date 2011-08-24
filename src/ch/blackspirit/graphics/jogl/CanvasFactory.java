@@ -20,6 +20,7 @@ import java.awt.GraphicsEnvironment;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sun.opengl.util.texture.TextureIO;
 
@@ -34,7 +35,7 @@ import ch.blackspirit.graphics.RealtimeCanvas;
 public final class CanvasFactory implements ch.blackspirit.graphics.CanvasFactory {
 	private CanvasProperties properties;
 	
-	private static boolean textureIOSetup = false;
+	private static AtomicBoolean textureIOSetup = new AtomicBoolean(false);
 	
 	public CanvasFactory() {
 		this.properties = new CanvasProperties();
@@ -42,9 +43,8 @@ public final class CanvasFactory implements ch.blackspirit.graphics.CanvasFactor
 		if(url != null) {
 			properties.load(url);
 		}
-		if (textureIOSetup == false) {
+		if (!textureIOSetup.getAndSet(true)) {
 			TextureIO.addTextureProvider(new ImageIOTextureProvider());
-			textureIOSetup = true;
 		}
 	}
 

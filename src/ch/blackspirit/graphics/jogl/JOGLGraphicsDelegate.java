@@ -74,7 +74,10 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	
 	private HashMap<Font, TextRenderer> textRenderers = new HashMap<Font, TextRenderer>();
 	
-	private ArrayList<Transformation> transformations = new ArrayList<Transformation>(1000);
+	private ArrayList<Transformation> transforms = new ArrayList<Transformation>(1000);
+	// not optimal but the first 127 Integers are cached.. more is unlikely and not performant anyway..
+	// TODO reimplement transformation logic with Matrices
+	private ArrayList<Integer> transformStack = new ArrayList<Integer>(200);
 	private RenderContext drawable;
 	
 	public JOGLGraphicsDelegate(RenderContext context, ResourceManager resourceManager, RuntimeProperties properties) {
@@ -98,7 +101,7 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	    applyPointAntialiasing();
 	    applyLineAntialiasing();
 	    applyPolygonAntialiasing();
-		setTransformation();
+		setTransform();
 	}
 	
 	// ==================== Accessors ====================
@@ -577,7 +580,7 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		setTextTransformation();
 		textRenderer.draw(text, 0, 0);
 		textRenderer.end3DRendering();
-		setTransformation();
+		setTransform();
 	}
 	public void getTextBounds(String text, Rectangle2D bounds) {
 		if (text == null) throw new IllegalArgumentException("text must not be null");
@@ -636,14 +639,14 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		this.translationX = translationX;
 		this.translationY = translationY;
 		this.angle = angle;
-		setTransformation();
+		setTransform();
 	}
 
 	public void rotate(float angle) {
 		endPrimitivesKeepImage();
 		Rotation rotation = rotations.get();
 		rotation.setAngle(angle);
-		transformations.add(rotation);
+		transforms.add(rotation);
 		rotation.apply(drawable.getGL());
 	}
 	public void translate(float x, float y) {
@@ -651,7 +654,7 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		Translation translation = translations.get();
 		translation.setTranslateX(-x);
 		translation.setTranslateY(-y);
-		transformations.add(translation);
+		transforms.add(translation);
 		translation.apply(drawable.getGL());
 	}
 	public void scale(float x, float y) {
@@ -659,21 +662,44 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		Scale scale = scales.get();
 		scale.setScaleX(x);
 		scale.setScaleY(y);
-		transformations.add(scale);
+		transforms.add(scale);
 		scale.apply(drawable.getGL());
 	}
 	public void clearTransformation() {
-		for(int i = 0; i < transformations.size(); i++) {
-			Transformation t = transformations.get(i);
+		this.clearTransform();
+	}
+	
+	public void clearTransform() {
+		for(int i = 0; i < transforms.size(); i++) {
+			Transformation t = transforms.get(i);
 			if(t instanceof Rotation) rotations.free((Rotation)t);
 			else if(t instanceof Translation) translations.free((Translation)t);
 			else if(t instanceof Scale) scales.free((Scale)t);
 		}
-		transformations.clear();
-		setTransformation();
+		transforms.clear();
+		transformStack.clear();
+		setTransform();
+	}
+
+	public void popTransform() {
+		if (transformStack.isEmpty()) {
+			throw new RuntimeException("No transformation left to pop from transform stack!");
+		}
+		int last = transformStack.remove(transformStack.size() - 1);
+		for (int i = transforms.size() - 1; i >= last; i--) {
+			Transformation t = transforms.remove(i);
+			if(t instanceof Rotation) rotations.free((Rotation)t);
+			else if(t instanceof Translation) translations.free((Translation)t);
+			else if(t instanceof Scale) scales.free((Scale)t);
+		}
+		setTransform();
+	}
+
+	public void pushTransform() {
+		transformStack.add(transforms.size());
 	}
 	
-	private void setTransformation() {
+	private void setTransform() {
 		endPrimitivesKeepImage();
 		GL gl = drawable.getGL();
 		
@@ -688,8 +714,8 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		gl.glTranslatef(translationX, translationY, 0);
 
 		// Recreate correct transformation
-		for(int i = 0; i < transformations.size(); i++) {
-			transformations.get(i).apply(gl);
+		for(int i = 0, l = transforms.size(); i < l; i++) {
+			transforms.get(i).apply(gl);
 		}
 	}
 	private void setTextTransformation() {
@@ -704,8 +730,8 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		gl.glTranslatef(translationX, translationY, 0);
 		
 		// Recreate correct transformation
-		for(int i = 0; i < transformations.size(); i++) {
-			transformations.get(i).apply(gl);
+		for(int i = 0; i < transforms.size(); i++) {
+			transforms.get(i).apply(gl);
 		}
 		gl.glScalef(1, -1, 1);
 	}
@@ -908,5 +934,4 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		drawable.setLastImage(image);
 		drawable.setLastPrimitive(primitive);
 	}
-
 }

@@ -256,11 +256,20 @@ public interface Graphics {
 	public void scale(float x, float y);
 	/**
 	 * Undoes all transformations (rotation, translation, scale).
+	 * @deprecated
 	 */
 	public void clearTransformation();
 	// public Transformation getTransformation();
 	// public void setTransformation(Transformation transformation);
 	// public void undoTransformation();
+	
+	/**
+	 * Clears all transformations and also the transformation stack.
+	 * There is currently no way to keep the transformation stack but that functionality may be added later.
+	 */
+	public void clearTransform();
+	public void pushTransform();
+	public void popTransform();
 	
 	/**
 	 * Sets the font used for text rendering and bound measurement.<br/>

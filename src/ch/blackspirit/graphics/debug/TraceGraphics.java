@@ -69,9 +69,22 @@ public class TraceGraphics implements Graphics {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "clear()");
 		delegate.clear();
 	}
+	@SuppressWarnings("deprecation")
 	public void clearTransformation() {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "clearTransformation()");
 		delegate.clearTransformation();
+	}
+	public void clearTransform() {
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "clearTransform()");
+		delegate.clearTransform();
+	}
+	public void popTransform() {
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "popTransform()");
+		delegate.popTransform();
+	}
+	public void pushTransform() {
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "pushTransform()");
+		delegate.pushTransform();
 	}
 	public void copyToImage(Image image, int x, int y, int width, int height) {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "copyToImage(" + image.toString() + ", " + x + ", " + y + ", " + width + ", " + height + ")");

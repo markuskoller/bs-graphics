@@ -236,7 +236,7 @@ public class Geometry {
 		point.add(t3);
 		point.scale(1f/3f);
 	}
-	
+	/*
 	public static final float MINIMUM_VALID_AREA = 1f;
 	public static boolean isPointInTriangle(Vector2f t1, Vector2f t2, Vector2f t3, Vector2f point) {
 		//calculate the three cross products in one direction
@@ -332,6 +332,7 @@ public class Geometry {
 		return Math.abs((side1.x * side2.y - side1.y * side2.x) / 2);
 		
 	}
+	*/
 
 	public static float distancePointsSquared(Vector2f p1, Vector2f p2) {
 		return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
