@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 Markus Koller
+ * Copyright 2008-2011 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,14 @@ final class ImageFactory implements ch.blackspirit.graphics.ImageFactory {
 		maxSize = size;
 		LOGGER.info("Maximum Texture Size: " + maxSize);
 	}
-	int getMaxTextureSize() {
+	public int getMaxImageWidth() {
 		return maxSize;
+	}
+	public int getMaxImageHeight() {
+		return maxSize;
+	}
+	public int getMaxImagePixels() {
+		return maxSize*maxSize;
 	}
 
 	public Image createImage(URL url, boolean forceInternalAlpha) throws IOException {

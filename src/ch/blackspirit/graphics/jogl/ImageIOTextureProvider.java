@@ -51,6 +51,7 @@ import com.sun.opengl.util.texture.TextureData;
 import com.sun.opengl.util.texture.spi.TextureProvider;
 
 /**
+ * TODO add ImageProvider for jogl implementation returning a BufferedImage from file.. -> use apache commons image library
  * Code copied with minimal changes to have it accessible as this originally 
  * was a protected static class: TextureIO.IIOTextureProvider 
  * @author Markus Koller

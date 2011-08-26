@@ -36,7 +36,7 @@ import ch.blackspirit.graphics.RealtimeCanvas;
 import ch.blackspirit.graphics.View;
 import ch.blackspirit.graphics.WindowListener;
 import ch.blackspirit.graphics.jogl.BufferTypes;
-import ch.blackspirit.graphics.jogl.CanvasFactory;
+import ch.blackspirit.graphics.CanvasFactory;
 import ch.blackspirit.graphics.shape.Shape;
 import ch.blackspirit.graphics.util.ColorGradientFactory;
 import ch.blackspirit.graphics.util.ShapeCreator;
@@ -162,11 +162,11 @@ public class ShapeDemo  {
 				renderer.drawText("Shape Demo");
 
 				renderer.setFont(fontSmall);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -100);
 				renderer.drawText("Common Shapes");
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -150);
 				rectangle.fillArea(renderer, false, false);
 				renderer.translate(-100, 0);
@@ -180,7 +180,7 @@ public class ShapeDemo  {
 				renderer.translate(-100, 0);
 				ellipsoidalArc.fillArea(renderer, false, false);
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -230);
 				renderer.drawTriangles(rectangle.getTriangles(), false);
 				renderer.translate(-100, 0);
@@ -194,11 +194,11 @@ public class ShapeDemo  {
 				renderer.translate(-100, 0);
 				renderer.drawTriangles(ellipsoidalArc.getTriangles(), false);
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -350);
 				renderer.drawText("Manually Created Shapes");
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -400);
 				emptyRectangle.fillArea(renderer, false, false);
 				renderer.translate(-100, 0);
@@ -206,7 +206,7 @@ public class ShapeDemo  {
 				renderer.translate(-100, 0);
 				manual2.fillArea(renderer, false, false);
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -480);
 				renderer.drawTriangles(emptyRectangle.getTriangles(), false);
 				renderer.translate(-100, 0);
@@ -214,11 +214,11 @@ public class ShapeDemo  {
 				renderer.translate(-100, 0);
 				renderer.drawTriangles(manual2.getTriangles(), false);
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-500, -350);
 				renderer.drawText("Shape Texturing");
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-500, -400);
 				bscircle.fillArea(renderer, false, true);
 				renderer.translate(-100, 0);
@@ -226,7 +226,7 @@ public class ShapeDemo  {
 		
 				// draw frames per second
 				renderer.setColor(red);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-650, -580);
 				renderer.drawText("FPS:" + fps);
 				

@@ -110,7 +110,7 @@ public class PrimitiveDemo  {
 
 				renderer.clear();
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.setFont(font24);
 				renderer.setColor(white);
 				renderer.translate(-50, -50);
@@ -122,10 +122,10 @@ public class PrimitiveDemo  {
 				float randomPointsX2 = 250;
 				float randomPointsY2 = 230;
 				renderer.setFont(font16);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-randomPointsX1, -randomPointsY1 + 30);
 				renderer.drawText("" + pointCount + " Random Points");
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				float randomPointsWidth = randomPointsX2 - randomPointsX1;
 				float randomPointsHeight = randomPointsY2 - randomPointsY1;
 				Vector2f point;
@@ -149,11 +149,11 @@ public class PrimitiveDemo  {
 				float randomLinesX2 = 250;
 				float randomLinesY2 = 530;
 				renderer.setFont(font16);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-randomLinesX1, -randomLinesY1 + 30);
 				renderer.setColor(white);
 				renderer.drawText("" + lineCount + " Random Lines");
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				float randomLinesWidth = randomLinesX2 - randomLinesX1;
 				float randomLinesHeight = randomLinesY2 - randomLinesY1;
 				Line line;
@@ -219,13 +219,13 @@ public class PrimitiveDemo  {
 				renderer.translate(-randomTriangleX1, -randomTriangleY1 + 30);
 				renderer.drawText("" + triangleCount + " Random Triangles");
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				
 				triangles.toArray(triangleA);
 				renderer.fillTriangles(triangleA, true);
 				
 				renderer.setColor(red);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-650, -580);
 				renderer.drawText("FPS:" + fps);
 

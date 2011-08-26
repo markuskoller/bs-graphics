@@ -226,29 +226,29 @@ public class ParticleDemo {
 				renderer.setColor(white);
 
 				renderer.clear();
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-200, -350);
 				fireSystem.draw(renderer);
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-600, -350);
 				springSystem.draw(renderer);
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-50, -50);
 				renderer.drawText("Particle Demo");
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-100, -500);
 				renderer.drawText("Fire particles: " + fireSystem.getParticleCount());
 
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-500, -500);
 				renderer.drawText("Spring particles: " + springSystem.getParticleCount());
 
 				// draw frames per second
 				renderer.setColor(red);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-650, -580);
 				renderer.drawText("FPS: " + fps);
 							

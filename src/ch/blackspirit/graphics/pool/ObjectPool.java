@@ -19,7 +19,9 @@ package ch.blackspirit.graphics.pool;
  * Object pool based on an array.
  * @param <T> Object to pool.
  * @author Markus Koller
+ *
  */
+// TODO implement using Object[index >> 8][index & 0x000F]
 public class ObjectPool<T extends java.lang.Object> {
 	private Object[] cachedObjects;
 	private T prototype;

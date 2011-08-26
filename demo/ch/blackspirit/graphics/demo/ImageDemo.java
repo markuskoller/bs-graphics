@@ -66,7 +66,7 @@ public class ImageDemo  {
 			}
 		}
 
-		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
+		CanvasFactory factory = new CanvasFactory();
 
 		// Create a fullscreen realtime canvas using the current display mode.
 		DisplayMode mode = factory.getDisplayMode(800, 600);
@@ -177,39 +177,53 @@ public class ImageDemo  {
 				// Background
 				for(int x = 0; x <= 800; x+=grass.getWidth() * 2) {
 					for(int y = 0; y <= 600; y+=grass.getHeight() * 2) {
+						renderer.pushTransform();
 						renderer.translate(-x, -y);
 						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
-						renderer.clearTransformation();
+//						renderer.clearTransformation();
+						renderer.popTransform();
 					}
 				}
 	
 				for(int x = 0; x <= 800; x+=wall.getWidth() * 2) {
+					renderer.pushTransform();
 					renderer.translate(-x, -160);
 					renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-					renderer.clearTransformation();
+//					renderer.clearTransformation();
+					renderer.popTransform();
 				}
 				for(int x = 0; x <= 800; x+=wall.getWidth() * 2) {
+					renderer.pushTransform();
 					renderer.translate(-x, -380);
 					renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-					renderer.clearTransformation();
+//					renderer.clearTransformation();
+					renderer.popTransform();
 				}
 	
 				for(int y = -16; y <= 400; y+=16) { 
+					renderer.pushTransform();
 					renderer.translate(-272, -y);
 					renderer.drawImage(wall, wall.getWidth() * 2, 30, 0, 0, wall.getWidth(), 15);
-					renderer.clearTransformation();
+//					renderer.clearTransformation();
+					renderer.popTransform();
 				}
+				renderer.pushTransform();
 				renderer.translate(-272, -400);
 				renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-				renderer.clearTransformation();
+//				renderer.clearTransformation();
+				renderer.popTransform();
 				for(int y = -16; y <= 400; y+=16) { 
+					renderer.pushTransform();
 					renderer.translate(-512, -y);
 					renderer.drawImage(wall, wall.getWidth() * 2, 30, 0, 0, wall.getWidth(), 15);
-					renderer.clearTransformation();
+//					renderer.clearTransformation();
+					renderer.popTransform();
 				}
+				renderer.pushTransform();
 				renderer.translate(-512, -400);
 				renderer.drawImage(wall, wall.getWidth() * 2, wall.getHeight() * 2);
-				renderer.clearTransformation();
+//				renderer.clearTransformation();
+				renderer.popTransform();
 			
 				// Animation
 				int animationX = 50;
@@ -224,7 +238,7 @@ public class ImageDemo  {
 				animFront.draw(renderer, 40, 70);
 				renderer.translate(-50, 0);
 				animBack.draw(renderer, 36, 70);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				// Flipping
 				int flipX = 300;
 				int flipY = 50;
@@ -238,7 +252,7 @@ public class ImageDemo  {
 				animLeft.draw(renderer, 44, 68, Flip.HORIZONTAL);
 				renderer.translate(-50, 0);
 				animLeft.draw(renderer, 44, 68, Flip.BOTH);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 		
 				// Rotating
 				int rotateX = 550;
@@ -250,7 +264,7 @@ public class ImageDemo  {
 				renderer.rotate(angle);
 				renderer.translate(animLeft.getWidth() / 2, animLeft.getHeight() / 2);
 				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				
 				// Coloring
 				int colorX = 50;
@@ -269,7 +283,7 @@ public class ImageDemo  {
 				renderer.setColor(white_alpha);
 				renderer.translate(-50, 0);
 				animLeft.draw(renderer, animLeft.getWidth(), animLeft.getHeight());
-				renderer.clearTransformation();
+				renderer.clearTransform();
 
 				// Sub-Imaging
 				int subX = 300;
@@ -293,7 +307,7 @@ public class ImageDemo  {
 				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight(), 0, 0, animLeft.getWidth() / 2, animLeft.getHeight());
 				renderer.translate(-30, 0);
 				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight(), animLeft.getWidth() / 2, 0, animLeft.getWidth() / 2, animLeft.getHeight());
-				renderer.clearTransformation();
+				renderer.clearTransform();
 			
 				// Sizing
 				int sizeX = 550;
@@ -310,7 +324,7 @@ public class ImageDemo  {
 				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight() / 2);
 				renderer.translate(10 - animLeft.getWidth(), 0);
 				animLeft.draw(renderer, animLeft.getWidth() / 2, animLeft.getHeight() * 2);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 			
 				if(up && !down) {
 					posY -= (float)elapsedTime / 11000000;
@@ -348,12 +362,12 @@ public class ImageDemo  {
 					}
 				}
 				
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-(posX + xOffset), -posY);
 				walk.draw(renderer, walk.getWidth(), walk.getHeight(), flip);
 				
 				renderer.setColor(red);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-650, -580);
 				renderer.drawText("FPS:" + fps);
 				

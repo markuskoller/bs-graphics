@@ -37,7 +37,7 @@ import ch.blackspirit.graphics.Image;
 import ch.blackspirit.graphics.RealtimeCanvas;
 import ch.blackspirit.graphics.View;
 import ch.blackspirit.graphics.WindowListener;
-import ch.blackspirit.graphics.jogl.CanvasFactory;
+import ch.blackspirit.graphics.CanvasFactory;
 
 /**
  * @author Markus Koller
@@ -82,7 +82,7 @@ public class VideoDemo {
 			canvas = factory.createRealtimeCanvasFullscreen();
 		}
 		
-		canvas.setVSync(true);
+//		canvas.setVSync(true);
 		canvas.addWindowListener(WindowListener.EXIT_ON_CLOSE);
 		canvas.setWindowTitle("Video Demo");
 
@@ -161,7 +161,7 @@ public class VideoDemo {
 
 				graphics.clear();
 				graphics.setColor(white);
-				graphics.clearTransformation();
+				graphics.clearTransform();
 				
 				// Getting current video image
 				if(videoRenderer.isUpdated()) {
@@ -182,7 +182,7 @@ public class VideoDemo {
 				
 				// draw frames per second
 				graphics.setColor(red);
-				graphics.clearTransformation();
+				graphics.clearTransform();
 				graphics.translate(-250, -280);
 				graphics.drawText("FPS:" + fps);
 							

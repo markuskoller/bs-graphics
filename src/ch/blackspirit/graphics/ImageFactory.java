@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 Markus Koller
+ * Copyright 2008-2011 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,19 @@ import java.net.URL;
  * @author Markus Koller
  */
 public interface ImageFactory {
+	/**
+	 * @return Maximum image width.
+	 */
+	public int getMaxImageWidth();
+	/**
+	 * @return Maximum image width.
+	 */
+	public int getMaxImageHeight();
+	/**
+	 * @return Maximum size an image can have height*width.
+	 */
+	public int getMaxImagePixels();
+
 	/**
 	 * Load a new unbuffered image from the given URL.
 	 * Supported images include: PNG (recommended), JPG, GIF, BMP, TGA.

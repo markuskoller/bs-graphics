@@ -282,13 +282,13 @@ public class SceneDemo  {
 					for(long y = gtop; y <= gtop + 600 + grass.getHeight()*2; y+=grass.getHeight() * 2) { 
 						renderer.translate(-x, -y);
 						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
-						renderer.clearTransformation();
+						renderer.clearTransform();
 					}
 				}
 
 				renderer.translate(-(posX + xOffset), -posY);
 				walk.draw(renderer, walk.getWidth(), walk.getHeight(), flip);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 
 				// Fires
 				drawFire(renderer, animFire, light, 150, 100, lightShineRandom1);
@@ -297,18 +297,18 @@ public class SceneDemo  {
 				drawFire(renderer, animFire, light, 650, 450, lightShineRandom4);
 
 				// Draw darkness
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-posX+400, -posY+300);
 				renderer.drawImage(dark, 1024, 1024);
 				
 				renderer.setColor(white);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-posX+400-50, -posY+300-50);
 				renderer.drawText("Scene Demo");
 
 				// draw frames per second
 				renderer.setColor(red);
-				renderer.clearTransformation();
+				renderer.clearTransform();
 				renderer.translate(-posX+400-650, -posY+300-580);
 				renderer.drawText("FPS:" + fps);
 							
@@ -382,7 +382,7 @@ public class SceneDemo  {
 		graphics.setDrawingMode(DrawingMode.MULTIPLY);
 		graphics.translate(-lightPosX, -lightPosY);
 		graphics.drawImage(light,shineRadX*2, shineRadY*2);
-		graphics.clearTransformation();
+		graphics.clearTransform();
 		graphics.setDrawingMode(DrawingMode.ALPHA_BLEND);
 	}
 	
@@ -392,7 +392,7 @@ public class SceneDemo  {
 		
 		renderer.translate(-(fireX - animFire.getWidth()/2), -(fireY - animFire.getHeight()/2));
 		animFire.draw(renderer, animFire.getWidth(), animFire.getHeight());			
-		renderer.clearTransformation();
+		renderer.clearTransform();
 	}
 
 }

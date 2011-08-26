@@ -78,7 +78,7 @@ public class SwingDemo  {
 					for(int y = -2; y < 2; y++) {
 						renderer.translate(-x * 44, -y * image.getHeight());
 						renderer.drawImage(image, 44, image.getHeight(), 0, 0, 44, image.getHeight());
-						renderer.clearTransformation();
+						renderer.clearTransform();
 					}
 				}
 			}
