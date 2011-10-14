@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/bsgraphics-demo/src/ch/blackspirit/graphics/demo/ShapeDemo.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ch.blackspirit.graphics.demo.ShapeDemo"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="ch.blackspirit.graphics.jogl.CanvasFactory"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="bsgraphics-demo"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dsun.java2d.noddraw=true&#13;&#10;-Djava.library.path=${workspace_loc:bsgraphics-jogl}/native/win;${workspace_loc:bsgraphics-demo}/native/win"/>
+</launchConfiguration>

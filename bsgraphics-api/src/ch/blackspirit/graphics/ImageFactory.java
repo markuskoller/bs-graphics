@@ -17,6 +17,7 @@ package ch.blackspirit.graphics;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 // FEATURE create image from bufferedimage
 
@@ -39,6 +40,8 @@ public interface ImageFactory {
 	 */
 	public int getMaxImagePixels();
 
+	public List<BufferType> getSupportedBufferTypes();
+	
 	/**
 	 * Load a new unbuffered image from the given URL.
 	 * Supported images include: PNG (recommended), JPG, GIF, BMP, TGA.

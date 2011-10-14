@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="bin/classes" path="src"/>
+	<classpathentry kind="lib" path="lib/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="lib/jogl.jar" sourcepath="lib/src/jogl-1.1.1-src.zip"/>
+	<classpathentry kind="src" output="bin/test" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/bsgraphics-api"/>
+	<classpathentry kind="lib" path="/bsgraphics-api/lib/vecmath.jar"/>
+	<classpathentry kind="output" path="bin/default"/>
+</classpath>

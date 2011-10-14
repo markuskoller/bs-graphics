@@ -26,6 +26,9 @@ import javax.vecmath.Color4f;
  * @author Markus Koller
  */
 public interface BufferType {
+	public boolean isAlphaSupported();
+	public int getBitsPerPixel();
+	
 	/**
 	 * @param image The image to read a pixel from.
 	 * @param x The pixels x coordinate.

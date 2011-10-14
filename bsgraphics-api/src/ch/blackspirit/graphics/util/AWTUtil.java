@@ -21,7 +21,7 @@ import javax.vecmath.Color4f;
 
 import ch.blackspirit.graphics.BufferType;
 import ch.blackspirit.graphics.Image;
-import ch.blackspirit.graphics.jogl.BufferTypes;
+//import ch.blackspirit.graphics.jogl.BufferTypes;
 
 /**
  * The AWTUtil helps converting buffered Blackspirit Graphics images to AWT images, 
@@ -31,34 +31,34 @@ import ch.blackspirit.graphics.jogl.BufferTypes;
 public class AWTUtil {
 	public static BufferedImage readImageBuffer(Image image) {
 		if(!image.isBuffered()) throw new IllegalArgumentException("Only buffered images can be converted.");
-		if(image.getBufferType() == BufferTypes.RGB_3Byte) {
-			BufferedImage bi = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-			byte[] buffer = (byte[])image.getBuffer();
-			int index = 0;
-			for(int y = 0; y < image.getHeight(); y++) {
-				for(int x = 0; x < image.getWidth(); x++) {
-					int r = buffer[index++]; 
-					int g = buffer[index++]; 
-					int b = buffer[index++]; 
-					bi.setRGB(x, y, (r << 16 & 0x00FF0000) + (g << 8 & 0x0000FF00) + (b  & 0x000000FF));
-				}
-			}
-			return bi;
-		} else if(image.getBufferType() == BufferTypes.RGBA_4Byte) {
-			BufferedImage bi = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-			byte[] buffer = (byte[])image.getBuffer();
-			int index = 0;
-			for(int y = 0; y < image.getHeight(); y++) {
-				for(int x = 0; x < image.getWidth(); x++) {
-					int r = buffer[index++]; 
-					int g = buffer[index++]; 
-					int b = buffer[index++]; 
-					int a = buffer[index++]; 
-					bi.setRGB(x, y, (a << 24 & 0xFF000000) + (r << 16 & 0x00FF0000) + (g << 8 & 0x0000FF00) + (b  & 0x000000FF));
-				}
-			}
-			return bi;
-		} else {
+//		if(image.getBufferType() == BufferTypes.RGB_3Byte) {
+//			BufferedImage bi = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+//			byte[] buffer = (byte[])image.getBuffer();
+//			int index = 0;
+//			for(int y = 0; y < image.getHeight(); y++) {
+//				for(int x = 0; x < image.getWidth(); x++) {
+//					int r = buffer[index++]; 
+//					int g = buffer[index++]; 
+//					int b = buffer[index++]; 
+//					bi.setRGB(x, y, (r << 16 & 0x00FF0000) + (g << 8 & 0x0000FF00) + (b  & 0x000000FF));
+//				}
+//			}
+//			return bi;
+//		} else if(image.getBufferType() == BufferTypes.RGBA_4Byte) {
+//			BufferedImage bi = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+//			byte[] buffer = (byte[])image.getBuffer();
+//			int index = 0;
+//			for(int y = 0; y < image.getHeight(); y++) {
+//				for(int x = 0; x < image.getWidth(); x++) {
+//					int r = buffer[index++]; 
+//					int g = buffer[index++]; 
+//					int b = buffer[index++]; 
+//					int a = buffer[index++]; 
+//					bi.setRGB(x, y, (a << 24 & 0xFF000000) + (r << 16 & 0x00FF0000) + (g << 8 & 0x0000FF00) + (b  & 0x000000FF));
+//				}
+//			}
+//			return bi;
+//		} else {
 			BufferType type = image.getBufferType();
 
 			BufferedImage bi = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
@@ -74,6 +74,6 @@ public class AWTUtil {
 				}
 			}
 			return bi;
-		}
+//		}
 	}
 }
