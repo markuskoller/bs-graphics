@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 
 import ch.blackspirit.graphics.Graphics;
@@ -97,9 +98,11 @@ final class CanvasGLEventListener extends AbstractGLEventListener {
 			imageFactory.setMaxTextureSize(size[0]);
 	
 			applyVSync(drawable);
-			if(!firstInitialization)resourceManager.refreshCache();
+			if(!firstInitialization)resourceManager.refreshCache((GL2)drawable.getGL());
 			
-			listenerInit(drawable);
+			if (!initiated) {
+				listenerInit(drawable);
+			}
 	
 			firstInitialization = false;
 		} catch (RuntimeException e) {

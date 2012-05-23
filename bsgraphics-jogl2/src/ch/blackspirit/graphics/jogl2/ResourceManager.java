@@ -190,8 +190,8 @@ final class ResourceManager implements
 	}
 
 	
-	void refreshCache() {
-		refreshImageCache();
+	void refreshCache(GL2 gl) {
+		refreshImageCache(gl);
 		refreshFontCache();
 	}
 
@@ -284,7 +284,7 @@ final class ResourceManager implements
 		glExecutor.execute(bufferRegionUpdate);
 	}
 
-	void cache(Image image) throws IOException {
+	void cache(GL2 gl, Image image) throws IOException {
 		if(!(image instanceof ch.blackspirit.graphics.jogl2.Image)) throw new RuntimeException("Image has not been created by the JOGL Blackspirit Graphics implementation!");
 		ch.blackspirit.graphics.jogl2.Image joglImage = (ch.blackspirit.graphics.jogl2.Image)image;
 		if(joglImage.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
@@ -292,57 +292,57 @@ final class ResourceManager implements
 		if(joglImage.texture != null) {
 			// Already cached, so just do a buffer update.
 			if(image.isBuffered()) {
-				updateBufferedCache(joglImage);
+				updateBufferedCache(gl, joglImage);
 			}
 			return;
 		}
 		
-		if(image.isBuffered()) cacheBuffered(joglImage);
-		else cacheUnbuffered(joglImage);
+		if(image.isBuffered()) cacheBuffered(gl, joglImage);
+		else cacheUnbuffered(gl, joglImage);
 	}
 	
-	private void cacheBuffered(ch.blackspirit.graphics.jogl2.Image image) {
+	private void cacheBuffered(GL2 gl, ch.blackspirit.graphics.jogl2.Image image) {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching buffered image: " + image.toString());
 		image.texture = TextureIO.newTexture(image.getTextureData());
 
 		// Default?
-		image.texture.setTexParameteri(GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-		image.texture.setTexParameteri(GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         
-		image.texture.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-        image.texture.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+        image.texture.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         cachedImages.add(image);
 	}
-	private void cacheUnbuffered(ch.blackspirit.graphics.jogl2.Image image) throws IOException {
+	private void cacheUnbuffered(GL2 gl, ch.blackspirit.graphics.jogl2.Image image) throws IOException {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Caching unbuffered image: " + image.toString());
 		TextureData textureData = image.createTextureData();
 		image.texture = TextureIO.newTexture(textureData);
 		textureData.flush();
 		// Default?
-		image.texture.setTexParameteri(GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-		image.texture.setTexParameteri(GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         
-		image.texture.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-        image.texture.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+		image.texture.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+        image.texture.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
         cachedImages.add(image);
 	}
 	
-	private void freeImageCache() {
+	private void freeImageCache(GL2 gl) {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free image cache");
 		for(ch.blackspirit.graphics.jogl2.Image image: cachedImages) {
-			if(image.texture != null) image.texture.dispose();
+			if(image.texture != null) image.texture.dispose(gl);
 			image.texture = null;
 		}
 		cachedImages.clear();
 	}
 
-	private void freeImageCache(Image image) {
+	private void freeImageCache(GL2 gl, Image image) {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Free cached image: " + image.toString());
 		if(image instanceof ch.blackspirit.graphics.jogl2.Image) {
 			ch.blackspirit.graphics.jogl2.Image joglImage = (ch.blackspirit.graphics.jogl2.Image)image;
 			if(joglImage.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
 			
-			if(joglImage.texture != null) joglImage.texture.dispose();
+			if(joglImage.texture != null) joglImage.texture.dispose(gl);
 			joglImage.texture = null;
 			cachedImages.remove(image);
 		} else {
@@ -350,36 +350,36 @@ final class ResourceManager implements
 		}
 	}
 	
-	private void refreshImageCache() {
+	private void refreshImageCache(GL2 gl) {
 		Set<Image> images = new HashSet<Image>(cachedImages);
-		freeImageCache();
+		freeImageCache(gl);
 		for(Image image: images) {
 			try {
-				cache(image);
+				cache(gl, image);
 			} catch (IOException e) {
 				LOGGER.log(Level.SEVERE, "Failed reloading an already cached image: " + image.toString(), e);
 			}
 		}
 	}
 	
-	private void updateBufferedCache(ch.blackspirit.graphics.jogl2.Image image) {
+	private void updateBufferedCache(GL2 gl, ch.blackspirit.graphics.jogl2.Image image) {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache: " + image.toString());
 		long time = System.nanoTime();
 		
 		if(image.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
-		if(image.texture == null) cacheBuffered(image);
-		else image.texture.updateImage(image.getTextureData());
+		if(image.texture == null) cacheBuffered(gl, image);
+		else image.texture.updateImage(gl, image.getTextureData());
 
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache took " + (System.nanoTime() - time) + "ns");
 	}
 	
-	private void updateBufferedCache(ch.blackspirit.graphics.jogl2.Image image, int offsetX, int offsetY, int width, int height) {
+	private void updateBufferedCache(GL2 gl, ch.blackspirit.graphics.jogl2.Image image, int offsetX, int offsetY, int width, int height) {
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache region " + offsetX + "," + offsetY + " " + width + "x" + height + ": " + image.toString());
 		long time = System.nanoTime();
 		
 		if(image.resourceManager != this) throw new RuntimeException("Image has not been created in the same canvas!");
-		if(image.texture == null) cacheBuffered(image);
-		else image.texture.updateSubImage(image.getTextureData(), 0, offsetX, offsetY, offsetX, offsetY, width, height);
+		if(image.texture == null) cacheBuffered(gl, image);
+		else image.texture.updateSubImage(gl, image.getTextureData(), 0, offsetX, offsetY, offsetX, offsetY, width, height);
 //		else image.texture.updateSubImage(image.getTextureData(), 0, 10, 2, 0, 63, width, height);
 		
 		if(LOGGER.isLoggable(Level.FINER)) LOGGER.finer("Update buffered image cache region took " + (System.nanoTime() - time) + "ns");
@@ -391,7 +391,7 @@ final class ResourceManager implements
 		ch.blackspirit.graphics.jogl2.Image image;
 		public void execute(GLDrawable drawable, GL2 gl) {
 //			System.out.println("cache");
-			resourceManager.updateBufferedCache(image);
+			resourceManager.updateBufferedCache(gl, image);
 		}
 	}
 	public static class UpdateCacheRegion implements GLExecutable {
@@ -403,20 +403,20 @@ final class ResourceManager implements
 		int height;
 		public void execute(GLDrawable drawable, GL2 gl) {
 //			System.out.println("cache region");
-			resourceManager.updateBufferedCache(image, offsetX, offsetY, width, height);
+			resourceManager.updateBufferedCache(gl, image, offsetX, offsetY, width, height);
 		}
 	}
 	public static class FreeImages implements GLExecutable {
 		ResourceManager resourceManager;
 		public void execute(GLDrawable drawable, GL2 gl) {
-			resourceManager.freeImageCache();
+			resourceManager.freeImageCache(gl);
 		}
 	}
 	public static class FreeImage implements GLExecutable {
 		ResourceManager resourceManager;
 		Image image;
 		public void execute(GLDrawable drawable, GL2 gl) {
-			resourceManager.freeImageCache(image);
+			resourceManager.freeImageCache(gl, image);
 		}
 	}
 	public static class CacheImage implements GLExecutable {
@@ -427,7 +427,7 @@ final class ResourceManager implements
 		public void execute(GLDrawable drawable, GL2 gl) {
 			exception = null;
 			try {
-				resourceManager.cache(image);
+				resourceManager.cache(gl, image);
 			} catch(IOException e) {
 				exception = e;
 			}

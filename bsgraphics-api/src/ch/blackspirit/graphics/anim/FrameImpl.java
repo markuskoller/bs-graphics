@@ -15,6 +15,8 @@
  */
 package ch.blackspirit.graphics.anim;
 
+import ch.blackspirit.graphics.Flip;
+import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.Image;
 
 /**
@@ -75,5 +77,22 @@ public class FrameImpl implements Frame {
 	}
 	public int getSubImageHeight() {
 		return subImageHeight;
+	}
+	public int getWidth() {
+		return subImageWidth;
+	}
+	public int getHeight() {
+		return subImageHeight;
+	}
+	
+	public void draw(Graphics graphics, float width, float height) {
+		draw(graphics, width, height, Flip.NONE);
+	}
+	public void draw(Graphics graphics, float width, float height, Flip flip) {
+		graphics.drawImage(image, 
+				width, height, 
+				subImageX, subImageY,
+				subImageWidth, subImageHeight,
+				flip);
 	}
 }

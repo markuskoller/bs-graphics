@@ -112,4 +112,9 @@ final class RenderContext  {
 		if(delegateRenderContext != null) delegateRenderContext.setLastImage(lastImage);
 		else this.lastImage = lastImage;
 	}
+	
+	public void destroy() {
+		drawable.getContext().destroy();
+		drawable.destroy();
+	}
 }

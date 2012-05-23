@@ -19,11 +19,11 @@ import java.io.IOException;
 
 import javax.vecmath.Color4f;
 
+import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller;
+import net.java.games.input.Controller.Type;
 import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
-import net.java.games.input.Component.Identifier.Key;
-import net.java.games.input.Controller.Type;
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.Flip;
 import ch.blackspirit.graphics.Graphics;
@@ -37,7 +37,6 @@ import ch.blackspirit.graphics.anim.Animation;
 import ch.blackspirit.graphics.anim.AnimationImpl;
 import ch.blackspirit.graphics.anim.Frame;
 import ch.blackspirit.graphics.anim.FrameImpl;
-import ch.blackspirit.graphics.jogl.CanvasFactory;
 
 /**
  * @author Markus Koller
@@ -52,11 +51,11 @@ public class ImageDemo  {
 	
 	private RealtimeCanvas canvas;
 
-	public static void main(String []args) throws IOException {
+	public static void main(String []args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ImageDemo demo = new ImageDemo();
-		demo.start();
+		demo.start((ch.blackspirit.graphics.CanvasFactory)Class.forName(args[0]).newInstance());
 	}
-	public void start() throws IOException {
+	public void start(ch.blackspirit.graphics.CanvasFactory factory) throws IOException {
 		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
 		Keyboard keyboard = null;
 		for(Controller controller: controllerEnv.getControllers()) {
@@ -65,8 +64,6 @@ public class ImageDemo  {
 				break;
 			}
 		}
-
-		CanvasFactory factory = new CanvasFactory();
 
 		// Create a fullscreen realtime canvas using the current display mode.
 		DisplayMode mode = factory.getDisplayMode(800, 600);

@@ -879,12 +879,13 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	}
 	private boolean ended = true;
 	private void startPrimitive(Primitive primitive, Image image) {
+		GL2 gl = (GL2)drawable.getGL();
 		// end last primitive if necessary
 		if(drawable.getLastPrimitive() != null) {
 			// LINES AND POINTS NOT CURRENTLY OPTIMIZED
 			if(primitive != drawable.getLastPrimitive() || 
 					primitive == Primitive.LINE || primitive == Primitive.POINT || primitive == Primitive.TEXTURED_TRIANGLE) {
-				((GL2)drawable.getGL()).glEnd();
+				((GL2)gl).glEnd();
 				ended = true;
 			} 
 		}
@@ -892,31 +893,30 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		if(image != drawable.getLastImage()) {
 			if(image != null && image.texture == null) {
 				try {
-					resourceManager.cache(image);
+					resourceManager.cache(gl, image);
 				} catch (IOException e) {
 					throw new RuntimeException("Error caching image. Do manual caching to prevent such errors during rendering.", e);
 				}
 			}
 			if(drawable.getLastImage() != null && image != null) {
 				if(drawable.getLastImage().texture.getTarget() != image.texture.getTarget()) {
-					drawable.getLastImage().texture.disable();
-					image.texture.enable();
+					drawable.getLastImage().texture.disable(gl);
+					image.texture.enable(gl);
 				}
 			} else {
 				if(drawable.getLastImage() != null) { 
-					drawable.getLastImage().texture.disable();
+					drawable.getLastImage().texture.disable(gl);
 				}
 				if(image != null) {
-					image.texture.enable();
+					image.texture.enable(gl);
 				}
 			}
 			if(image != null) {
-				image.texture.bind();
+				image.texture.bind(gl);
 			}
 		}
 		// start new primitive if necessary
 		if(primitive != null && ended) {
-			GL2 gl = (GL2)drawable.getGL();
 			if(primitive == Primitive.POINT) {
 				gl.glBegin(GL.GL_POINTS);
 			}

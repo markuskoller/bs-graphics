@@ -15,6 +15,8 @@
  */
 package ch.blackspirit.graphics.anim;
 
+import ch.blackspirit.graphics.Flip;
+import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.Image;
 
 /**
@@ -28,6 +30,7 @@ import ch.blackspirit.graphics.Image;
 public interface Frame {
 	/**
 	 * @return The image used in this frame.
+	 * @deprecated Animation is now using draw method.
 	 */
 	public Image getImage();
 	/**
@@ -36,18 +39,48 @@ public interface Frame {
 	public long getDisplayTime();
 	/**
 	 * @return The sub images X coordinate.
+	 * @deprecated Animation is now using draw method.
 	 */
 	public int getSubImageX();
 	/**
 	 * @return The sub images Y coordinate.
+	 * @deprecated Animation is now using draw method.
 	 */
 	public int getSubImageY();
 	/**
 	 * @return The sub images width.
+	 * @deprecated Animation is now using draw method.
 	 */
 	public int getSubImageWidth();
 	/**
 	 * @return The sub images height.
+	 * @deprecated Animation is now using draw method.
 	 */
 	public int getSubImageHeight();
-}
+	
+	/**
+	 * @return
+	 * @since Blackspirit Graphics 2.1
+	 */
+	public int getWidth();
+	/**
+	 * @return
+	 * @since Blackspirit Graphics 2.1
+	 */
+	public int getHeight();
+	
+	/**
+	 * Draw the current frame of the animation. 
+	 * @param graphics The graphics to draw the frame with.
+	 * @param width Width to display the frame with.
+	 * @param height Height to display the frame with.
+	 */
+	public void draw(Graphics graphics, float width, float height);
+	/**
+	 * Draw the current frame of the animation. 
+	 * @param graphics The graphics to draw the frame with.
+	 * @param width Width to display the frame with.
+	 * @param height Height to display the frame with.
+	 * @param flip Image flipping.
+	 */
+	public void draw(Graphics graphics, float width, float height, Flip flip);}

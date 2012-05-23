@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.media.opengl.DebugGL2;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 
 import ch.blackspirit.graphics.Graphics;
@@ -143,20 +146,21 @@ final class ImageGraphicsContext extends AbstractGraphicsContext implements ch.b
 				context.graphicsListener.draw(view, userGraphics);
 			}
 			
+			GL2 gl = (GL2)drawable.getGL();
 			delegate.endFrame();
 			if(image.texture == null) {
 				try {
-					resourceManager.cache(image);
+					resourceManager.cache(gl, image);
 				} catch (IOException e) {
 					throw new RuntimeException("Error caching image. Do manual caching to prevent such errors during rendering.", e);
 				}
 			}
 
-			image.texture.enable();
-			image.texture.bind();	
+			image.texture.enable(gl);
+			image.texture.bind(gl);	
 			// copy buffer to image
-			drawable.getGL().glCopyTexSubImage2D(image.texture.getTarget(), 0, 0, 0, 0, 0, image.getWidth(), image.getHeight());
-			image.texture.disable();
+			gl.glCopyTexSubImage2D(image.texture.getTarget(), 0, 0, 0, 0, 0, image.getWidth(), image.getHeight());
+			image.texture.disable(gl);
 			
 			endDrawing();
 		}

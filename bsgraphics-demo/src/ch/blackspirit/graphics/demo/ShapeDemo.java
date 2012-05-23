@@ -23,11 +23,12 @@ import java.util.List;
 import javax.vecmath.Color4f;
 import javax.vecmath.Vector2f;
 
+import net.java.games.input.Component.Identifier.Key;
 import net.java.games.input.Controller;
+import net.java.games.input.Controller.Type;
 import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
-import net.java.games.input.Component.Identifier.Key;
-import net.java.games.input.Controller.Type;
+import ch.blackspirit.graphics.CanvasFactory;
 import ch.blackspirit.graphics.Graphics;
 import ch.blackspirit.graphics.GraphicsContext;
 import ch.blackspirit.graphics.GraphicsListener;
@@ -35,8 +36,6 @@ import ch.blackspirit.graphics.Image;
 import ch.blackspirit.graphics.RealtimeCanvas;
 import ch.blackspirit.graphics.View;
 import ch.blackspirit.graphics.WindowListener;
-import ch.blackspirit.graphics.jogl.BufferTypes;
-import ch.blackspirit.graphics.CanvasFactory;
 import ch.blackspirit.graphics.shape.Shape;
 import ch.blackspirit.graphics.util.ColorGradientFactory;
 import ch.blackspirit.graphics.util.ShapeCreator;
@@ -50,12 +49,12 @@ import ch.blackspirit.graphics.util.TextureMapper;
 public class ShapeDemo  {
 	RealtimeCanvas canvas;
 	
-	public static void main(String []args) throws IOException {
+	public static void main(String []args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ShapeDemo demo = new ShapeDemo();
-		demo.start();
+		demo.start((CanvasFactory)Class.forName(args[0]).newInstance());
 	}
 	
-	public void start() throws IOException {
+	public void start(CanvasFactory factory) throws IOException {
 		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
 		Keyboard keyboard = null;
 		for(Controller controller: controllerEnv.getControllers()) {
@@ -65,7 +64,6 @@ public class ShapeDemo  {
 			}
 		}
 
-		CanvasFactory factory = new ch.blackspirit.graphics.jogl.CanvasFactory();
 		// Create a fullscreen realtime canvas using the current display mode.
 		canvas = factory.createRealtimeCanvasFullscreen();
 
@@ -123,7 +121,8 @@ public class ShapeDemo  {
 		final Shape manual2 = ShapeCreator.create(special2Outline, special2Cutouts);
 
 		
-		final Image gradient = canvas.getImageFactory().createBufferedImage(256, 256, BufferTypes.RGBA_4Byte);
+		final Image gradient = canvas.getImageFactory().createBufferedImage(256, 256, 
+				BufferTypeUtil.getBest(canvas.getImageFactory(), true));
 		
 		final Color4f white = new Color4f(1,1,1,1);
 		final Color4f red = new Color4f(1,0,0,1);

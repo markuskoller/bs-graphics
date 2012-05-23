@@ -110,6 +110,7 @@ public interface Animation<T extends Frame> {
 	 * @param subImageY Y coordinate of the top left corner of the sub image.
 	 * @param subImageWidth Width of the sub image.
 	 * @param subImageHeight Height of the sub image.
+	 * @deprecated Create an animation using sub images instead.
 	 */
 	public void draw(Graphics graphics, float width, float height, 
 			int subImageX, int subImageY, int subImageWidth, int subImageHeight);
@@ -123,6 +124,7 @@ public interface Animation<T extends Frame> {
 	 * @param subImageWidth Width of the sub image.
 	 * @param subImageHeight Height of the sub image.
 	 * @param flip Image flipping.
+	 * @deprecated Create an animation using sub images instead.
 	 */
 	public void draw(Graphics graphics, float width, float height, 
 			int subImageX, int subImageY, int subImageWidth, int subImageHeight, Flip flip);

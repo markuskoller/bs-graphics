@@ -100,7 +100,7 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	    applyLineWidth();
 	    applyPointAntialiasing();
 	    applyLineAntialiasing();
-	    applyPolygonAntialiasing();
+	    //applyPolygonAntialiasing();
 		setTransform();
 	}
 	

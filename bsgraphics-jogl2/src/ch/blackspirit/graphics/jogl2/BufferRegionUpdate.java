@@ -86,8 +86,8 @@ final class BufferRegionUpdate implements GLExecutable {
 		// reset color mask
 		gl.glColorMask(true, true, true, true);
 		
-		image.texture.enable();
-		image.texture.bind();
+		image.texture.enable(gl);
+		image.texture.bind(gl);
 
 		// Slow but needed!
 		gl.glClearColor(0, 0, 0, 0);
@@ -118,7 +118,7 @@ final class BufferRegionUpdate implements GLExecutable {
         gl.glPixelStorei(GL2.GL_PACK_SKIP_PIXELS, x);
         gl.glPixelStorei(GL2.GL_PACK_SKIP_ROWS, y);
         
-		image.texture.disable();
+		image.texture.disable(gl);
 
 		if(image.getBufferType() == BufferTypes.RGBA_4Byte) {
     		gl.glReadPixels(x, drawable.getHeight() - (image.getHeight() - y), width, height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image.byteBuffer);

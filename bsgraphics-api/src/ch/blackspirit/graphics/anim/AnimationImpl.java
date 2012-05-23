@@ -69,11 +69,11 @@ public class AnimationImpl<T extends Frame> implements Animation<T> {
 
 	public void addFrame(T frame) {
 		if(frames.size() == 0) {
-			width = frame.getSubImageWidth();
-			height = frame.getSubImageHeight();
+			width = frame.getWidth();
+			height = frame.getHeight();
 		} else {
-			if(width != frame.getSubImageWidth() ||
-					height != frame.getSubImageHeight()) {
+			if(width != frame.getWidth() ||
+					height != frame.getHeight()) {
 				throw new IllegalArgumentException("All Frames in an Animation must have the same width and height!");
 			}
 		}
@@ -114,17 +114,10 @@ public class AnimationImpl<T extends Frame> implements Animation<T> {
 	}
 	
 	public void draw(Graphics graphics, float width, float height) {
-		draw(graphics, width, height, Flip.NONE);
+        getFrame().draw(graphics, width, height);
 	}
 	public void draw(Graphics graphics, float width, float height, Flip flip) {
-        T frame = getFrame();
-        Image image = frame.getImage();
-
-        graphics.drawImage(image, 
-				width, height, 
-				frame.getSubImageX(), frame.getSubImageY(),
-				frame.getSubImageWidth(), frame.getSubImageHeight(),
-				flip);
+		getFrame().draw(graphics, width, height, flip);
 	}
 	public void draw(Graphics graphics, float width, float height, int subImageX, int subImageY, int subImageWidth, int subImageHeight) {
 		draw(graphics, width, height, subImageX, subImageY, subImageWidth, subImageHeight, Flip.NONE);
