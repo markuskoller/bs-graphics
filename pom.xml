@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ch.blackspirit.graphics</groupId>
+  <artifactId>bsgraphics-parent</artifactId>
+  <version>2.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>bsgraphics-parent</name>
+  <url>http://blackspirit.ch</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <vecmath.version>1.4.0</vecmath.version>
+  </properties>
+  
+  <modules>
+	<module>bsgraphics-api</module>
+	<module>bsgraphics-jogl</module>
+	<module>bsgraphics-jogl2</module>
+	<module>bsgraphics-demo</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>java3d</groupId>
+    	<artifactId>vecmath</artifactId>
+    	<version>${vecmath.version}</version>
+    </dependency>
+  </dependencies>
+  </dependencyManagement>
+  
+  <repositories>
+  	<repository>
+        <id>blackspirit-repo</id>
+        <url>http://mvn.blackspirit.ch</url>
+        <releases>
+           <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>        
+     </repository>
+  </repositories>
+  
+</project>
