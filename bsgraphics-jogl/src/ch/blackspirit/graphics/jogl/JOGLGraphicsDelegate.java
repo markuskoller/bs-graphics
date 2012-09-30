@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 Markus Koller
+ * Copyright 2008-2012 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,12 @@ import java.util.HashMap;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLContext;
+import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Color4f;
+import javax.vecmath.Matrix3f;
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector2f;
+import javax.vecmath.Vector3f;
 
 import ch.blackspirit.graphics.DrawingMode;
 import ch.blackspirit.graphics.Flip;
@@ -39,6 +43,8 @@ import com.sun.opengl.util.texture.TextureCoords;
  * @author Markus Koller
  */
 final class JOGLGraphicsDelegate implements GraphicsDelegate {
+	private static final float DEG_TO_RAD_FACTOR = (2 * (float)Math.PI) / 360f;
+
 	private ResourceManager resourceManager;
 
 	private DrawingMode drawingMode = DrawingMode.ALPHA_BLEND;
@@ -67,23 +73,22 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 	
 	private RuntimeProperties properties;
 	
-	// Transformation caches
-	private ObjectPool<Rotation> rotations = new ObjectPool<Rotation>(new Rotation(), 10);
-	private ObjectPool<Translation> translations = new ObjectPool<Translation>(new Translation(), 10);
-	private ObjectPool<Scale> scales = new ObjectPool<Scale>(new Scale(), 10);
+	// Transformation cache
+	private ObjectPool<Matrix4f> matrices = new ObjectPool<Matrix4f>(new Matrix4f(), 200);
 	
 	private HashMap<Font, TextRenderer> textRenderers = new HashMap<Font, TextRenderer>();
 	
-	private ArrayList<Transformation> transforms = new ArrayList<Transformation>(1000);
-	// not optimal but the first 127 Integers are cached.. more is unlikely and not performant anyway..
-	// TODO reimplement transformation logic with Matrices
-	private ArrayList<Integer> transformStack = new ArrayList<Integer>(200);
+	private ArrayList<Matrix4f> transformStack = new ArrayList<Matrix4f>(200);
+	private Matrix4f modelTransform = new Matrix4f();
+    private Matrix4f viewTransform = new Matrix4f();
 	private RenderContext drawable;
 	
 	public JOGLGraphicsDelegate(RenderContext context, ResourceManager resourceManager, RuntimeProperties properties) {
 		this.resourceManager = resourceManager;
 		this.drawable = context;
 		this.properties = properties;
+		this.modelTransform.setIdentity();
+		this.viewTransform.setIdentity();
 	}
 		
 	public void init() {
@@ -642,98 +647,190 @@ final class JOGLGraphicsDelegate implements GraphicsDelegate {
 		setTransform();
 	}
 
+	private Matrix4f transformM = new Matrix4f();
 	public void rotate(float angle) {
 		endPrimitivesKeepImage();
-		Rotation rotation = rotations.get();
-		rotation.setAngle(angle);
-		transforms.add(rotation);
-		rotation.apply(drawable.getGL());
+		transformM.setIdentity();
+		transformM.setRotation(new AxisAngle4f(new Vector3f(0f,0f,1f), angle * DEG_TO_RAD_FACTOR));
+		modelTransform.mul(transformM);
+		applyTransform(viewTransform, modelTransform);
 	}
 	public void translate(float x, float y) {
 		endPrimitivesKeepImage();
-		Translation translation = translations.get();
-		translation.setTranslateX(-x);
-		translation.setTranslateY(-y);
-		transforms.add(translation);
-		translation.apply(drawable.getGL());
+		// !! inverted translation behaviour !!
+		transformM.setIdentity();
+		transformM.setTranslation(new Vector3f(x, y, 0));
+		modelTransform.mul(transformM);
+		applyTransform(viewTransform, modelTransform);
 	}
 	public void scale(float x, float y) {
 		endPrimitivesKeepImage();
-		Scale scale = scales.get();
-		scale.setScaleX(x);
-		scale.setScaleY(y);
-		transforms.add(scale);
-		scale.apply(drawable.getGL());
+		scaleMatrix(transformM, x, y, 1);
+		modelTransform.mul(transformM);
+		applyTransform(viewTransform, modelTransform);
 	}
 	public void clearTransformation() {
 		this.clearTransform();
 	}
 	
 	public void clearTransform() {
-		for(int i = 0; i < transforms.size(); i++) {
-			Transformation t = transforms.get(i);
-			if(t instanceof Rotation) rotations.free((Rotation)t);
-			else if(t instanceof Translation) translations.free((Translation)t);
-			else if(t instanceof Scale) scales.free((Scale)t);
+		endPrimitivesKeepImage();
+		for(int i = 0; i < transformStack.size(); i++) {
+			matrices.free(transformStack.get(i));
 		}
-		transforms.clear();
 		transformStack.clear();
-		setTransform();
+		modelTransform.setIdentity();
+		applyTransform(viewTransform, modelTransform);
 	}
 
 	public void popTransform() {
 		if (transformStack.isEmpty()) {
 			throw new RuntimeException("No transformation left to pop from transform stack!");
 		}
-		int last = transformStack.remove(transformStack.size() - 1);
-		for (int i = transforms.size() - 1; i >= last; i--) {
-			Transformation t = transforms.remove(i);
-			if(t instanceof Rotation) rotations.free((Rotation)t);
-			else if(t instanceof Translation) translations.free((Translation)t);
-			else if(t instanceof Scale) scales.free((Scale)t);
-		}
-		setTransform();
+		endPrimitivesKeepImage();
+		Matrix4f m = transformStack.remove(transformStack.size() - 1);
+		modelTransform.set(m);
+		matrices.free(m);
+		applyTransform(viewTransform, modelTransform);
 	}
 
 	public void pushTransform() {
-		transformStack.add(transforms.size());
+		Matrix4f m = matrices.get();
+		m.set(modelTransform);
+		transformStack.add(m);
 	}
+	private Matrix4f m1 = new Matrix4f();
+	private Matrix4f m2 = new Matrix4f();
 	
 	private void setTransform() {
 		endPrimitivesKeepImage();
-		GL gl = drawable.getGL();
+//		GL gl = drawable.getGL();
 		
-		// Reset
-		gl.glLoadIdentity();
+//		// Reset
+//		gl.glLoadIdentity();
+//		
+//		// Rotate to correct view
+//		gl.glRotatef(180f, 1, 0, 0);
+//		gl.glRotatef(angle, 0, 0, 1);
+//
+//		// Translate to camera
+//		gl.glTranslatef(translationX, translationY, 0);
+		viewTransform.setIdentity();
+		viewTransform.setRotation(new AxisAngle4f(new Vector3f(1,0,0), (float)Math.PI));
+		m1.setIdentity();
+		m1.setRotation(new AxisAngle4f(new Vector3f(0,0,1), angle * DEG_TO_RAD_FACTOR));
+		viewTransform.mul(m1);
+		m2.setIdentity();
+		m2.setTranslation(new Vector3f(translationX, translationY, 0));
+		viewTransform.mul(m2);
 		
-		// Rotate to correct view
-		gl.glRotatef(180f, 1, 0, 0);
-		gl.glRotatef(angle, 0, 0, 1);
-
-		// Translate to camera
-		gl.glTranslatef(translationX, translationY, 0);
-
-		// Recreate correct transformation
-		for(int i = 0, l = transforms.size(); i < l; i++) {
-			transforms.get(i).apply(gl);
-		}
+		applyTransform(viewTransform, modelTransform);
 	}
+	private Matrix4f applyM = new Matrix4f();
+	private void applyTransform(Matrix4f view, Matrix4f model) {
+		applyM.setIdentity();
+		applyM.mul(view);
+		applyM.mul(model);
+		applyTransform(applyM);
+	}
+	public void setTransform(Matrix3f matrix) {
+		convert(matrix, modelTransform);
+	}
+	public void applyTransform(Matrix3f matrix) {
+		convert(matrix, applyM);
+		modelTransform.mul(applyM);
+		applyTransform(viewTransform, modelTransform);
+	}
+	private void convert(Matrix3f from, Matrix4f to) {
+		to.m00 = from.m00;
+		to.m01 = from.m01;
+		to.m02 = 0f;
+		to.m03 = from.m02;
+		to.m10 = from.m10;
+		to.m11 = from.m11;
+		to.m12 = 0f;
+		to.m13 = from.m12;
+		to.m20 = 0f;
+		to.m21 = 0f;
+		to.m22 = 1f;
+		to.m23 = 0f;
+		to.m30 = from.m20;
+		to.m31 = from.m21;
+		to.m32 = 0f;
+		to.m33 = from.m22;
+	}
+	public void getTransform(Matrix3f matrix) {
+		matrix.m00 = modelTransform.m00;
+		matrix.m01 = modelTransform.m01;
+		matrix.m02 = modelTransform.m03;
+		matrix.m10 = modelTransform.m10;
+		matrix.m11 = modelTransform.m11;
+		matrix.m12 = modelTransform.m13;
+		matrix.m20 = modelTransform.m30;
+		matrix.m21 = modelTransform.m31;
+		matrix.m22 = modelTransform.m33;
+	}
+	
+	private final void scaleMatrix(Matrix4f m, float x, float y, float z) {
+		m.setIdentity();
+		m.m00 = x;
+		m.m11 = y;
+		m.m22 = z;
+	}
+	
+	float[] applyMArray = new float[16];
+	private void applyTransform(Matrix4f matrix) {
+		GL gl = drawable.getGL();
+		gl.glLoadIdentity();
+		convert(matrix, applyMArray);
+		gl.glMultMatrixf(applyMArray, 0);
+	}
+	private void convert(Matrix4f m, float[] d) {
+		d[0] = m.m00;
+		d[1] = m.m10;
+		d[2] = m.m20;
+		d[3] = m.m30;
+		d[4] = m.m01;
+		d[5] = m.m11;
+		d[6] = m.m21;
+		d[7] = m.m31;
+		d[8] = m.m02;
+		d[9] = m.m12;
+		d[10] = m.m22;
+		d[11] = m.m32;
+		d[12] = m.m03;
+		d[13] = m.m13;
+		d[14] = m.m23;
+		d[15] = m.m33;
+	}
+	private Matrix4f textTransform = new Matrix4f();
 	private void setTextTransformation() {
 		endPrimitives();
-		GL gl = drawable.getGL();
+//		GL gl = drawable.getGL();
+//		
+//		// Reset
+//		gl.glLoadIdentity();
+//		// Rotate to correct view
+//		gl.glRotatef(180f, 1, 0, 0);
+//		// Translate to camera
+//		gl.glTranslatef(translationX, translationY, 0);
+//		
+//		// Recreate correct transformation
+//		for(int i = 0; i < transforms.size(); i++) {
+//			transforms.get(i).apply(gl);
+//		}
+//		gl.glScalef(1, -1, 1);
 		
-		// Reset
-		gl.glLoadIdentity();
-		// Rotate to correct view
-		gl.glRotatef(180f, 1, 0, 0);
-		// Translate to camera
-		gl.glTranslatef(translationX, translationY, 0);
+		textTransform.setIdentity();
+		textTransform.setRotation(new AxisAngle4f(new Vector3f(1,0,0), (float)Math.PI));
+		m1.setIdentity();
+		m1.setTranslation(new Vector3f(translationX, translationY, 0));
+		textTransform.mul(m1);
+		textTransform.mul(modelTransform);
+		scaleMatrix(m2, 1, -1, 1);
+		textTransform.mul(m2);
 		
-		// Recreate correct transformation
-		for(int i = 0; i < transforms.size(); i++) {
-			transforms.get(i).apply(gl);
-		}
-		gl.glScalef(1, -1, 1);
+		applyTransform(textTransform);
 	}
 
 	// ==================== Drawing Settings ====================

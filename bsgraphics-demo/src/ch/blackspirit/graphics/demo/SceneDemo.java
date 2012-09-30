@@ -17,6 +17,7 @@ package ch.blackspirit.graphics.demo;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.ServiceLoader;
 
 import javax.vecmath.Color4f;
 
@@ -25,6 +26,7 @@ import net.java.games.input.Controller;
 import net.java.games.input.Controller.Type;
 import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.Keyboard;
+import ch.blackspirit.graphics.CanvasFactory;
 import ch.blackspirit.graphics.DisplayMode;
 import ch.blackspirit.graphics.DrawingMode;
 import ch.blackspirit.graphics.Flip;
@@ -66,12 +68,17 @@ public class SceneDemo  {
 
 	private RealtimeCanvas canvas;
 	
+	private ServiceLoader<ch.blackspirit.graphics.CanvasFactory> canvasFactoryLoader;
+	
 	public static void main(String []args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		SceneDemo demo = new SceneDemo();
-		demo.start((ch.blackspirit.graphics.CanvasFactory)Class.forName(args[0]).newInstance());
+		demo.start();
 	}
 	
-	public void start(ch.blackspirit.graphics.CanvasFactory factory) throws IOException {
+	public void start() throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+//		canvasFactoryLoader = ServiceLoader.load(ch.blackspirit.graphics.CanvasFactory.class);
+//		ch.blackspirit.graphics.CanvasFactory factory = canvasFactoryLoader.iterator().next();
+		ch.blackspirit.graphics.CanvasFactory factory = (CanvasFactory) Class.forName("ch.blackspirit.graphics.jogl2.CanvasFactory").newInstance();
 		ControllerEnvironment controllerEnv = ControllerEnvironment.getDefaultEnvironment();
 		Keyboard keyboard = null;
 		for(Controller controller: controllerEnv.getControllers()) {
@@ -277,13 +284,13 @@ public class SceneDemo  {
 
 				for(long x = gleft; x <= gleft + 800 + grass.getWidth()*2; x+=grass.getWidth() * 2) {
 					for(long y = gtop; y <= gtop + 600 + grass.getHeight()*2; y+=grass.getHeight() * 2) { 
-						renderer.translate(-x, -y);
+						renderer.translate(x, y);
 						renderer.drawImage(grass, grass.getWidth() * 2, grass.getHeight() * 2);
 						renderer.clearTransform();
 					}
 				}
 
-				renderer.translate(-(posX + xOffset), -posY);
+				renderer.translate(posX + xOffset, posY);
 				walk.draw(renderer, walk.getWidth(), walk.getHeight(), flip);
 				renderer.clearTransform();
 
@@ -295,18 +302,18 @@ public class SceneDemo  {
 
 				// Draw darkness
 				renderer.clearTransform();
-				renderer.translate(-posX+400, -posY+300);
+				renderer.translate(posX-400, posY-300);
 				renderer.drawImage(dark, 1024, 1024);
 				
 				renderer.setColor(white);
 				renderer.clearTransform();
-				renderer.translate(-posX+400-50, -posY+300-50);
+				renderer.translate(posX-400+50, posY-300+50);
 				renderer.drawText("Scene Demo");
 
 				// draw frames per second
 				renderer.setColor(red);
 				renderer.clearTransform();
-				renderer.translate(-posX+400-650, -posY+300-580);
+				renderer.translate(posX-400+650, posY-300+580);
 				renderer.drawText("FPS:" + fps);
 							
 				// calculate frames per second every second
@@ -377,7 +384,7 @@ public class SceneDemo  {
 
 		graphics.setColor(new Color4f(.0f,.0f,.0f,1f));
 		graphics.setDrawingMode(DrawingMode.MULTIPLY);
-		graphics.translate(-lightPosX, -lightPosY);
+		graphics.translate(lightPosX, lightPosY);
 		graphics.drawImage(light,shineRadX*2, shineRadY*2);
 		graphics.clearTransform();
 		graphics.setDrawingMode(DrawingMode.ALPHA_BLEND);
@@ -387,7 +394,7 @@ public class SceneDemo  {
 		// Draw the fire
 		renderer.setColor(new Color4f(1f,1f,1f,1f));
 		
-		renderer.translate(-(fireX - animFire.getWidth()/2), -(fireY - animFire.getHeight()/2));
+		renderer.translate(fireX - animFire.getWidth()/2, fireY - animFire.getHeight()/2);
 		animFire.draw(renderer, animFire.getWidth(), animFire.getHeight());			
 		renderer.clearTransform();
 	}

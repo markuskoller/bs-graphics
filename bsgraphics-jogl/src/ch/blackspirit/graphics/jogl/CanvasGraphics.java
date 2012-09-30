@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 Markus Koller
+ * Copyright 2008-2012 Markus Koller
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.vecmath.Color4f;
+import javax.vecmath.Matrix3f;
 
 import ch.blackspirit.graphics.DrawingMode;
 import ch.blackspirit.graphics.Flip;
@@ -170,6 +171,15 @@ final class CanvasGraphics implements Graphics, ViewListener {
 	}
 	public void popTransform() {
 		delegate.popTransform();
+	}
+	public void getTransform(Matrix3f matrix) {
+		delegate.getTransform(matrix);
+	}
+	public void setTransform(Matrix3f matrix) {
+		delegate.setTransform(matrix);
+	}
+	public void applyTransform(Matrix3f matrix) {
+		delegate.applyTransform(matrix);
 	}
 
 	public void setDrawingMode(DrawingMode drawingMode) {
