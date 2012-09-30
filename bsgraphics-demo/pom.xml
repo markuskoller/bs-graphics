@@ -1,0 +1,121 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+  	<groupId>ch.blackspirit.graphics</groupId>
+  	<artifactId>bsgraphics-parent</artifactId>
+  	<version>2.1.0-SNAPSHOT</version>
+  	<relativePath>..</relativePath>
+  </parent>
+
+  <artifactId>bsgraphics-demo</artifactId>
+  <packaging>jar</packaging>
+
+  <name>bsgraphics-demo</name>
+  <url>http://blackspirit.ch</url>
+
+  <properties>
+    <!--jogl.version>1.1.1a</jogl.version-->
+    <jinput.version>2.0.5</jinput.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!--dependency>
+    	<groupId>${project.groupId}</groupId>
+    	<artifactId>bsgraphics-api-mvn</artifactId>
+    	<version>${project.version}</version>
+    </dependency-->
+  </dependencies>
+  
+  <build>
+  	<plugins>
+  		<plugin>
+	        <groupId>com.googlecode.mavennatives</groupId>
+	        <artifactId>maven-nativedependencies-plugin</artifactId>
+	        <version>0.0.6</version>
+	        <executions>
+	                <execution>
+	                        <id>unpacknatives</id>
+	                        <goals>
+	                                <goal>copy</goal>
+	                        </goals>
+	                </execution>
+	        </executions>
+	        <configuration>
+			    <nativesTargetDir>target/natives</nativesTargetDir>
+			    <separateDirs>false</separateDirs>
+			</configuration>
+		</plugin>
+  	</plugins>
+  </build>
+  <profiles>
+  
+  	<profile>
+  		<id>natives-all</id>
+		<activation><activeByDefault/></activation>
+  		<dependencies>
+		    <dependency>
+				<groupId>net.java.jinput</groupId><artifactId>jinput</artifactId><version>2.0.5</version>
+			</dependency>
+  		</dependencies>
+  	</profile>
+  	<profile>
+  		<id>natives-win-32</id>
+  		<dependencies>
+		    <dependency>
+				<groupId>net.java.jinput</groupId><artifactId>jinput</artifactId><version>2.0.5</version>
+				<exclusions><exclusion><artifactId>jinput-platform</artifactId><groupId>net.java.jinput</groupId></exclusion></exclusions>
+			</dependency>
+			<dependency>
+				<groupId>net.java.jinput</groupId><artifactId>jinput-platform</artifactId><version>2.0.5</version>
+				<classifier>natives-windows</classifier><scope>runtime</scope>
+			</dependency>
+  		</dependencies>
+  	</profile>
+    <profile>
+      <id>jogl2</id>
+      <dependencies>
+        <dependency>
+    	   <groupId>${project.groupId}</groupId>
+    	   <artifactId>bsgraphics-jogl2</artifactId>
+    	   <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>jogl</id>
+      <dependencies>
+    	<dependency>
+    	  <groupId>${project.groupId}</groupId>
+    	  <artifactId>bsgraphics-jogl</artifactId>
+    	  <version>${project.version}</version>
+    	</dependency>
+      </dependencies>
+      <!-- properties>
+        <jogl.natives.version>${jogl.version}</jogl.natives.version>
+        <jogl.natives.group.id>javax.media.opengl</jogl.natives.group.id>
+        <jogl.natives.prefix>jogl-natives-</jogl.natives.prefix>
+        <jogl-gluegen-rt.natives.prefix>gluegen-rt-natives-</jogl-gluegen-rt.natives.prefix>
+      </properties>
+    </profile>
+    <profile>
+      <id>win32</id>
+      <activation>
+      	<os>
+          <family>Windows</family>
+          <arch>x86</arch>
+        </os>
+      </activation>
+      <properties>
+      	<jogl.natives.os>windows-i586</jogl.natives.os>
+        <jinput.natives.classifier>natives-windows</jinput.natives.classifier>
+      </properties-->
+    </profile>
+  </profiles>
+</project>
