@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.vecmath.Color4f;
+import javax.vecmath.Matrix3f;
 
 import ch.blackspirit.graphics.DrawingMode;
 import ch.blackspirit.graphics.Flip;
@@ -86,6 +87,18 @@ public class TraceGraphics implements Graphics {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "pushTransform()");
 		delegate.pushTransform();
 	}
+	public void getTransform(Matrix3f matrix) {
+		delegate.getTransform(matrix);
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "getTransform(" + matrix + ")");
+	}
+	public void setTransform(Matrix3f matrix) {
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "setTransform(" + matrix + ")");
+		delegate.setTransform(matrix);
+	}
+	public void applyTransform(Matrix3f matrix) {
+		if(LOGGER.isLoggable(level)) LOGGER.log(level, "applyTransform(" + matrix + ")");
+		delegate.applyTransform(matrix);
+	}	
 	public void copyToImage(Image image, int x, int y, int width, int height) {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "copyToImage(" + image.toString() + ", " + x + ", " + y + ", " + width + ", " + height + ")");
 		delegate.copyToImage(image, x, y, width, height);
@@ -278,5 +291,5 @@ public class TraceGraphics implements Graphics {
 	public void translate(float x, float y) {
 		if(LOGGER.isLoggable(level)) LOGGER.log(level, "translate(" + x + ", " + y + ")");
 		delegate.translate(x, y);
-	}	
+	}
 }

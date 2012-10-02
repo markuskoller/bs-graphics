@@ -19,6 +19,7 @@ import java.awt.Font;
 import java.awt.geom.Rectangle2D;
 
 import javax.vecmath.Color4f;
+import javax.vecmath.Matrix3f;
 
 /**
  * Gives access to all drawing operations and parameters.
@@ -270,6 +271,9 @@ public interface Graphics {
 	public void clearTransform();
 	public void pushTransform();
 	public void popTransform();
+	public void getTransform(Matrix3f matrix);
+	public void setTransform(Matrix3f matrix);
+	public void applyTransform(Matrix3f matrix);
 	
 	/**
 	 * Sets the font used for text rendering and bound measurement.<br/>

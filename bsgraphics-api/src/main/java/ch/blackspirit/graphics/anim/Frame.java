@@ -83,4 +83,5 @@ public interface Frame {
 	 * @param height Height to display the frame with.
 	 * @param flip Image flipping.
 	 */
-	public void draw(Graphics graphics, float width, float height, Flip flip);}
+	public void draw(Graphics graphics, float width, float height, Flip flip);
+}
